@@ -37,10 +37,10 @@ sudo mkdir -p "$libs_dir"
 sudo cp libs/* "$libs_dir/"
 sudo chmod -R +x "$libs_dir/"
 
+mkdir -p "$shells_dir"
 sudo cp installer.sh "$shells_dir/"
 sudo chmod -R +x "$shells_dir/"
 
-cd "$name"
 echo "done."
 echo "======================================================================="
 #================================================================================
@@ -60,7 +60,7 @@ echo "======================================================================="
 
 echo "Installing $cliName..."
 echo "Building project..."
-cd "$name"
+cd "$currentDir/$name/$name"
 
 sudo mkdir -p "$install_servess_dir"
 sudo chmod +x ./publish.sh && (./publish.sh "$install_servess_dir")

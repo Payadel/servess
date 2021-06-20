@@ -6,7 +6,9 @@ fi
 
 backup_dir="/var/server-backups"
 statusFile=install-status.txt
-rm "$statusFile"
+if [ -f "$statusFile" ]; then
+    rm "$statusFile"
+fi
 
 run() {
     process_name=$1
