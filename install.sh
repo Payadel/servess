@@ -35,11 +35,11 @@ echo "Installing shell libs..."
 cd "Shells"
 sudo mkdir -p "$libs_dir"
 sudo cp libs/* "$libs_dir/"
-sudo chmod -R +x "$libs_dir/"
+sudo chmod -R 750 "$libs_dir/"
 
 mkdir -p "$shells_dir"
 sudo cp installer.sh "$shells_dir/"
-sudo chmod -R +x "$shells_dir/"
+sudo chmod -R 750 "$shells_dir/"
 
 echo "done."
 echo "======================================================================="
@@ -63,7 +63,7 @@ echo "Building project..."
 cd "$currentDir/$name/$name"
 
 sudo mkdir -p "$install_servess_dir"
-sudo chmod +x ./publish.sh && (./publish.sh "$install_servess_dir")
+sudo chmod 750 ./publish.sh && (./publish.sh "$install_servess_dir")
 if [ $? != 0 ]; then
     echo "Operation failed."
     exit 1
@@ -72,7 +72,7 @@ fi
 echo "done."
 
 echo "Adds execute access..."
-cd $install_servess_dir && sudo chmod +x "$cliName"
+cd $install_servess_dir && sudo chmod 750 "$cliName"
 echo "done."
 
 echo "Adds file to bin dir..."

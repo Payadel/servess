@@ -4,12 +4,6 @@ if [ $? != 0 ]; then
     exit 1
 fi
 
-backup_dir="/var/server-backups"
-statusFile=install-status.txt
-if [ -f "$statusFile" ]; then
-    rm "$statusFile"
-fi
-
 run() {
     process_name=$1
     execute_path=$2
@@ -35,6 +29,14 @@ run() {
     echo "============================================================"
     echo "============================================================"
 }
+
+# Status file
+backup_dir="/var/server-backups"
+statusFile="install-status.txt"
+if [ -f "$statusFile" ]; then
+    rm "$statusFile"
+fi
+chmod 750 "$statusFile"
 
 #Server finger print
 run "Server Finger Print" /opt/shell-libs/serverFingerPrint-get.sh

@@ -6,6 +6,7 @@ read username
 sudo useradd "$username" -s /bin/rbash
 sudo passwd "$username"
 
+sudo chmod 750 "/home/$username"
 sudo mkdir -p "/home/$username/bin"
 
 bash_profile="/home/$username/.bash_profile"
