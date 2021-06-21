@@ -1,9 +1,3 @@
-. /opt/shell-libs/selectEditor.sh
-if [ $? != 0 ]; then
-    echo "Can not find library files."
-    exit 1
-fi
-
 run() {
     process_name=$1
     execute_path=$2
@@ -36,7 +30,7 @@ statusFile="install-status.txt"
 if [ -f "$statusFile" ]; then
     rm "$statusFile"
 fi
-chmod 750 "$statusFile"
+sudo chmod 750 "$statusFile"
 
 #Server finger print
 run "Server Finger Print" /opt/shell-libs/serverFingerPrint-get.sh
@@ -53,11 +47,7 @@ run "Git" /opt/shell-libs/git-install.sh
 
 #=======================================================================
 #Use editor
-
-#Get editor:
-printf "Input your text editor (like nano): "
-read userEditor
-editor=($getEditor $userEditor)
+editor="nano"
 
 #Dns:
 backup_name=$(date +"%s")
