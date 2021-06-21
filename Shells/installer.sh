@@ -24,8 +24,22 @@ run() {
     echo "============================================================"
 }
 
+#Inputs:
+if [ -z "$1" ]; then
+    printf "Input backup path (default: /var): "
+    read backup_basePath
+    if [ -z "$backup_basePath" ]; then
+        backup_basePath="/var"
+    fi
+else
+    backup_basePath=$1
+fi
+backup_dirName="server-backups"
+backup_dir="$backup_basePath/$backup_dirName"
+sudo mkdir -p "$backup_dir"
+sudo chmod 750 "$backup_dir"
+
 # Status file
-backup_dir="/var/server-backups"
 statusFile="install-status.txt"
 if [ -f "$statusFile" ]; then
     rm "$statusFile"
