@@ -24,12 +24,12 @@ getBackup() {
     fi
 
     # cd $backupDir && git checkout -b "$backupName"
-    contentDir_name="content"
-    if [ -d "$contentDir_name" ]; then
-        sudo rm "$contentDir_name"
+    contentDir_name="contents"
+    if [ -d "$backupDir/$contentDir_name" ]; then
+        sudo rm -r "$backupDir/$contentDir_name"
     fi
-    mkdir -p "$contentDir_name"
 
+    mkdir -p "$backupDir/$contentDir_name/"
     if [ "$isDir" = "true" ]; then
         cp -r "$target" "$backupDir/$contentDir_name/"
     else

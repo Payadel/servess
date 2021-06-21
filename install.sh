@@ -63,6 +63,7 @@ echo "Building project..."
 cd "$currentDir/$name/$name"
 
 sudo mkdir -p "$install_servess_dir"
+sudo chmod 750 "$install_servess_dir"
 sudo chmod 750 ./publish.sh && (./publish.sh "$install_servess_dir")
 if [ $? != 0 ]; then
     echo "Operation failed."
