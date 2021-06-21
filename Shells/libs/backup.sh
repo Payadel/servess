@@ -14,20 +14,23 @@ getBackup() {
 
     #Create directory for backup if is not exist
     if [ ! -d "$backupDir" ]; then
-        mkdir -p $backupDir
+        sudo mkdir -p "$backupDir"
     fi
+    chmod 750 "$backupDir"
 
     #Init git if is not exist
     if [ ! -d "$backupDir/.git" ]; then
-        git init $backupDir
+        sudo git init $backupDir
     fi
 
-    cd $backupDir && git checkout -b "$backupName"
+    # cd $backupDir && git checkout -b "$backupName"
+    contentDir_name="content"
+    sudo rm "$contentDir_name"
 
     if [ "$isDir" = "true" ]; then
-        cp -r $target $backupDir
+        cp -r "$target" "$backupDir/$contentDir_name/"
     else
-        cp $target $backupDir
+        cp "$target" "$backupDir/$contentDir_name/"
     fi
 
     cd $backupDir && git add --all
