@@ -3,7 +3,7 @@ run() {
     execute_path=$2
 
     printf "Processing $process_name...\n"
-    echo "Processing $process_name...\n" >>$statusFile
+    echo "Processing $process_name..." >>$statusFile
 
     sudo chmod +x $execute_path
     $execute_path $3 $4 $5 $6 $7 $8 $9
