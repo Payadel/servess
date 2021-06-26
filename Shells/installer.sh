@@ -44,6 +44,7 @@ statusFile="install-status.txt"
 if [ -f "$statusFile" ]; then
     rm "$statusFile"
 fi
+touch "$statusFile"
 sudo chmod 750 "$statusFile"
 
 #Server finger print
@@ -57,7 +58,7 @@ run "Create Timeshift Backup" /opt/shell-libs/timeshift-createBackup.sh "First B
 run "update" /opt/shell-libs/update.sh
 
 #Git:
-run "Git" /opt/shell-libs/git-install.sh
+#run "Git" /opt/shell-libs/git-install.sh
 
 #=======================================================================
 #Use editor
