@@ -72,9 +72,6 @@ run "Backup dns" /opt/shell-libs/backup.sh "/etc/netplan/01-netcfg.yaml" "$backu
 #Update
 run "Update" /opt/shell-libs/update.sh
 
-#Dotnet (for Servess)
-run "install Dotnet" /opt/shell-libs/dotnet5-install.sh
-
 #SSH-Key
 run "SSH Key config" /opt/shell-libs/sshKey-config.sh "$editor"
 
