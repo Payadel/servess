@@ -30,7 +30,7 @@ bash_profile="$home_dir/.bash_profile"
 if [ -f "$bash_profile" ]; then
     sudo rm "$bash_profile"
 fi
-echo "PATH=$bin_dir" >>$bash_profile
+echo "readonly PATH=$bin_dir" >>$bash_profile
 sudo chown root:root $bash_profile
 sudo chmod 755 $bash_profile
 
