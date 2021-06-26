@@ -53,6 +53,7 @@ run "Server Finger Print" /opt/shell-libs/serverFingerPrint-get.sh
 #timeshift
 run "install timeshift" /opt/shell-libs/timeshift-install.sh
 run "Create Timeshift Backup" /opt/shell-libs/timeshift-createBackup.sh "First Backup"
+chmod 750 /timeshift
 
 #Update
 run "update" /opt/shell-libs/update.sh
