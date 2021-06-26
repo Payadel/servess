@@ -5,19 +5,9 @@ echo "Add Restrict User"
 printf "Username: "
 read username
 
-printf "Use rbash? (y/n): "
-read useRbash
-if [ useRbash = "y" ] || [ useRbash = "Y" ]; then
-    echo "Using rbash..."
-    bash="/bin/rbash"
-else
-    echo "Using bash..."
-    bash="/bin/bash"
-fi
-
 #Adds user
 home_dir="/home/$username"
-sudo useradd "$username" -s "$bash" --home-dir "$home_dir"
+sudo useradd "$username" -s "/bin/rbash" --home-dir "$home_dir"
 
 #Sets password
 sudo passwd "$username"
