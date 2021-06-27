@@ -2,8 +2,12 @@
 echo "Add Restrict User"
 
 #Gets username
-printf "Username: "
-read username
+if [ -z $1 ]; then
+    printf "Username: "
+    read username
+else
+    username=$1
+fi
 
 #Adds user
 home_dir="/home/$username"
