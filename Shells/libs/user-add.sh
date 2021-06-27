@@ -12,3 +12,4 @@ chmod 750 "$home_dir"
 
 #Disables welcome banner
 sudo touch "$home_dir/.hushlogin"
+chattr +i "$home_dir/.hushlogin"

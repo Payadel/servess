@@ -38,6 +38,7 @@ backup_dirName="server-backups"
 backup_dir="$backup_basePath/$backup_dirName"
 sudo mkdir -p "$backup_dir"
 sudo chmod 750 "$backup_dir"
+chattr +i "$backup_dir"
 
 # Status file
 statusFile="install-status.txt"
@@ -54,6 +55,7 @@ run "Server Finger Print" /opt/shell-libs/serverFingerPrint-get.sh
 run "install timeshift" /opt/shell-libs/timeshift-install.sh
 run "Create Timeshift Backup" /opt/shell-libs/timeshift-createBackup.sh "First Backup"
 chmod 750 /timeshift
+chattr +i /timeshift
 
 #Update
 run "update" /opt/shell-libs/update.sh
