@@ -122,10 +122,10 @@ echo ""
 echo "Other permissions..."
 cache_dir="$home_dir/.cache"
 config_dir="$home_dir/.config"
-docker_dir="$home_dir/.docker"
+# docker_dir="$home_dir/.docker"
 local_dir="$home_dir/.local"
 
-sudo chown root:root "$config_dir" "$docker_dir" "$local_dir" && sudo chmod 755 "$cache_dir" "$config_dir" "$docker_dir" "$local_dir"
+sudo chown root:root "$config_dir" "$local_dir" && sudo chmod 755 "$cache_dir" "$config_dir" "$local_dir"
 if [ $? != 0 ]; then
     echo "Operation failed."
     exit "$?"
@@ -137,7 +137,7 @@ if [ $? != 0 ]; then
     exit "$?"
 fi
 
-sudo chattr +i "$config_dir" "$docker_dir" "$local_dir"
+sudo chattr +i "$config_dir" "$local_dir"
 echo "================================================================================"
 echo ""
 
@@ -173,9 +173,26 @@ HISTFILESIZE=2000
 
 readonly PATH=$bin_dir
 export DOCKER_HOST=unix:///run/user/$group_number/docker.sock" >>"$profile_file"
+if [ $? != 0 ]; then
+    echo "Operation failed."
+    exit "$?"
+fi
 
 echo "if [ -f ~/.profile ]; then
 	. ~/.profile
 fi" | tee -a "$bash_profile_file" | tee -a "$bashrc_file"
+if [ $? != 0 ]; then
+    echo "Operation failed."
+    exit "$?"
+fi
 
 chattr +i "$profile_file" "$bash_profile_file" "$bashrc_file"
+
+#===============================================================================
+echo ""
+printf "Do you want to login in docker? (y/n): "
+read loginToDocker
+
+if [ "$loginToDocker" = "y" ] || [ "$loginToDocker" = "Y" ]; then
+    ssh -t "$username@$server_ip" "docker login"
+fi
