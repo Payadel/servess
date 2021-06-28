@@ -38,8 +38,30 @@ else
     proxy_pass=$5
     nginx_dir=$6
 fi
-
+#=======================================================================================
 echo ""
+
+#Validations
+
+#ssl_fullchain_path
+if [ ! -f $ssl_fullchain_path ]; then
+    echo "Can not find $ssl_fullchain_path."
+    exit 1
+fi
+
+#ssl_privateKey_path
+if [ ! -f $ssl_privateKey_path ]; then
+    echo "Can not find $ssl_privateKey_path."
+    exit 1
+fi
+
+#nginx_dir
+if [ ! -d $nginx_dir ]; then
+    echo "Can not find directory: $nginx_dir"
+    exit 1
+fi
+
+#proxy_pass
 curl -s -I $proxy_pass
 if [ $? != 0 ]; then
     printf "We have trouble with $proxy_pass. Are you sure proxy pass is valid? (y/n): "
@@ -68,12 +90,25 @@ if [ "$isDataValid" != "y" ] && [ "$isDataValid" != "Y" ]; then
 fi
 echo ""
 
-#==============================================================================
+#Config file
 configFile_path="$nginx_dir/sites-available/$server_name"
 if [ -f "$configFile_path" ]; then
-    echo "file $configFile_path is exist"
-    exit 1
+    printf "file $configFile_path is exist. Replace it? (y/n): "
+    read replaceFile
+
+    if [ "$replaceFile" != "y" ] && [ "$replaceFile" != "Y" ]; then
+        echo "Operation canceled."
+        exit 0
+    fi
+
+    sudo rm "$configFile_path"
+    if [ $? != 0 ]; then
+        echo "Error in config file!"
+        exit 1
+    fi
 fi
+#==============================================================================
+#Start...
 
 sudo echo "server {
     listen 443 ssl;
@@ -131,12 +166,33 @@ if [ $? == 0 ]; then
     echo "Create ln file $configFile_ln_path successfull."
 else
     echo "Operation failed."
+
+    printf "Do you want remove $configFile_path? (y/n): "
+    read remove_configFile
+
+    if [ "$remove_configFile" = "y" ] || [ "$remove_configFile" = "Y" ]; then
+        echo "Remove $configFile_path..."
+        sudo rm "$configFile_path"
+    fi
+
     exit $?
 fi
 
 nginx -t
 if [ $? != 0 ]; then
     echo "Error in config file!"
+
+    printf "Do you want remove files? (y/n): "
+    read remove_files
+
+    if [ "$remove_files" = "y" ] || [ "$remove_files" = "Y" ]; then
+        echo "Remove $configFile_path..."
+        sudo rm "$configFile_path"
+
+        echo "Remove $configFile_ln_path..."
+        sudo rm "$configFile_ln_path"
+    fi
+
     exit 1
 fi
 
