@@ -20,5 +20,9 @@ if [ $? != 0 ]; then
   exit 1
 fi
 
-docker login
-sudo docker run hello-world
+printf "Do you want to login in docker? (y/n): "
+read loginToDocker
+if [ "$loginToDocker" = "y" ] || [ "$loginToDocker" = "Y" ]; then
+  docker login
+  sudo docker run hello-world
+fi
