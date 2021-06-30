@@ -32,6 +32,15 @@ change_owner_root() {
     echo ""
 }
 
+#Get Inputs
+if [ -z "$1" ]; then
+    printf "Username: "
+    read username
+else
+    username=$1
+fi
+#================================================================================
+
 #Checks
 if [ ! -f "/opt/shell-libs/user-add.sh" ]; then
     echo "Can not find user-add.sh library."
@@ -41,8 +50,6 @@ fi
 echo "Prepairing..."
 sudo apt install uidmap && sudo systemctl disable --now docker.service docker.socket && sudo apt-get install -y docker-ce-rootless-extras
 
-printf "Username: "
-read username
 sudo /opt/shell-libs/user-add.sh "$username"
 if [ $? != 0 ]; then
     echo "Operation failed."
