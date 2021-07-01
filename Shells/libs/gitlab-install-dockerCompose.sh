@@ -1,7 +1,7 @@
 . /opt/shell-libs/selectEditor.sh
 if [ $? != 0 ]; then
-    echo "Can not find library files."
-    exit 1
+    echo "Can not find library files." >&2
+    exit $?
 fi
 editor=($getEditor $1)
 
@@ -18,14 +18,14 @@ else
         echo "Importing gilab image..."
         cat $gitlab_image_path | docker import - gitlab/gitlab-ce
     else
-        echo "Can not find any file."
-        exit 1
+        echo "Can not find any file." >&2
+        exit $?
     fi
 fi
 
 if [ $? != 0 ]; then
-    printf "\nOperation failed.\n"
-    exit 1
+    printf "\nOperation failed.\n" >&2
+    exit $?
 fi
 
 #========================================================================
@@ -39,8 +39,8 @@ fi
 mkdir -p $gitlab_home
 
 if [ $? != 0 ]; then
-    printf "\nOperation failed.\n"
-    exit 1
+    printf "\nOperation failed.\n" >&2
+    exit $?
 fi
 export GITLAB_HOME="$gitlab_home"
 #========================================================================
@@ -81,8 +81,8 @@ cd $compose_dir && echo "web:
     - '$GITLAB_HOME/data:/var/opt/gitlab'" >>$docker_filename
 
 if [ $? != 0 ]; then
-    printf "\nOperation failed.\n"
-    exit 1
+    printf "\nOperation failed.\n" >&2
+    exit $?
 fi
 
 cd $compose_dir && $editor $docker_filename
@@ -93,8 +93,8 @@ echo "Run gitlab compose file..."
 cd $compose_dir && docker-compose up -d
 
 if [ $? != 0 ]; then
-    printf "\nOperation failed.\n"
-    exit 1
+    printf "\nOperation failed.\n" >&2
+    exit $?
 fi
 
 echo "Done."
@@ -114,7 +114,7 @@ if [ -z $use_ssl ] || [ $use_ssl == "y" ] || [ $use_ssl == "Y" ]; then
     read fullchain
 
     if [ ! -f $fullChain ]; then
-        echo "Can not find ant file."
+        echo "Can not find ant file." >&2
         exit 1
     fi
 
@@ -122,7 +122,7 @@ if [ -z $use_ssl ] || [ $use_ssl == "y" ] || [ $use_ssl == "Y" ]; then
     read privkey
 
     if [ ! -f $privkey ]; then
-        echo "Can not find ant file."
+        echo "Can not find ant file." >&2
         exit 1
     fi
 
@@ -177,8 +177,8 @@ else
 fi
 
 if [ $? != 0 ]; then
-    printf "\nOperation failed.\n"
-    exit 1
+    printf "\nOperation failed.\n" >&2
+    exit $?
 fi
 
 $editor $config_file
@@ -187,8 +187,8 @@ sudo ln -s $config_file "$nginx_dir/sites-enabled/"
 sudo nginx -t
 
 if [ $? != 0 ]; then
-    printf "\nOperation failed.\n"
-    exit 1
+    printf "\nOperation failed.\n" >&2
+    exit $?
 fi
 
 sudo systemctl restart nginx

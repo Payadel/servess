@@ -2,7 +2,7 @@
 if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ] || [ -z "$5" ] || [ -z "$6" ]; then
     if [ ! -z "$1" ]; then
         #Or all or none
-        echo "Too few inputs."
+        echo "Too few inputs." >&2
         exit 1
     else
         printf "SSL fullchain path (like: fullchain.pem): "
@@ -45,19 +45,19 @@ echo ""
 
 #ssl_fullchain_path
 if [ ! -f $ssl_fullchain_path ]; then
-    echo "Can not find $ssl_fullchain_path."
+    echo "Can not find $ssl_fullchain_path." >&2
     exit 1
 fi
 
 #ssl_privateKey_path
 if [ ! -f $ssl_privateKey_path ]; then
-    echo "Can not find $ssl_privateKey_path."
+    echo "Can not find $ssl_privateKey_path." >&2
     exit 1
 fi
 
 #nginx_dir
 if [ ! -d $nginx_dir ]; then
-    echo "Can not find directory: $nginx_dir"
+    echo "Can not find directory: $nginx_dir" >&2
     exit 1
 fi
 
@@ -103,8 +103,8 @@ if [ -f "$configFile_path" ]; then
 
     sudo rm "$configFile_path"
     if [ $? != 0 ]; then
-        echo "Error in config file!"
-        exit 1
+        echo "Error in config file!" >&2
+        exit $?
     fi
 fi
 #==============================================================================
@@ -149,7 +149,7 @@ server {
 if [ $? == 0 ]; then
     echo "Create file $configFile_path successfull."
 else
-    echo "Operation failed."
+    echo "Operation failed." >&2
     exit $?
 fi
 
@@ -165,7 +165,7 @@ sudo ln -s "$configFile_path" "$configFile_ln_path"
 if [ $? == 0 ]; then
     echo "Create ln file $configFile_ln_path successfull."
 else
-    echo "Operation failed."
+    echo "Operation failed." >&2
 
     printf "Do you want remove $configFile_path? (y/n): "
     read remove_configFile
@@ -180,7 +180,7 @@ fi
 
 nginx -t
 if [ $? != 0 ]; then
-    echo "Error in config file!"
+    echo "Error in config file!" >&2
 
     printf "Do you want remove files? (y/n): "
     read remove_files
@@ -193,15 +193,15 @@ if [ $? != 0 ]; then
         sudo rm "$configFile_ln_path"
     fi
 
-    exit 1
+    exit $?
 fi
 
 echo "Restart nginx service..."
 sudo systemctl restart nginx
 
 if [ $? != 0 ]; then
-    echo "Error in config file!"
-    exit 1
+    echo "Error in config file!" >&2
+    exit $?
 fi
 
 echo "Done."

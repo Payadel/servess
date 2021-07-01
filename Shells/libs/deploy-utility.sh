@@ -12,13 +12,13 @@ installAndBuild() {
 
     cd "$dir" && sudo npm install
     if [ $? != 0 ]; then
-        echo "Install failed."
+        echo "Install failed." >&2
         return 1
     fi
 
     cd "$dir" && sudo npm run build
     if [ $? != 0 ]; then
-        echo "Build failed."
+        echo "Build failed." >&2
         return 1
     fi
 
@@ -36,12 +36,12 @@ cloneProject() {
     sudo git clone --branch "$branch" https://"$username":"$password""@github.com/$github_sub_url" "$path"
 
     if [ $? != 0 ]; then
-        echo "Clone project failed."
+        echo "Clone project failed." >&2
         return 1
     fi
 }
 
-getUpdatedProject(){
+getUpdatedProject() {
     path_main=$1
     path_temp=$2
     username=$3
@@ -49,7 +49,6 @@ getUpdatedProject(){
     branch=$5
     github_sub_url=$6
     work_dir=$7
-    
 
     if [ -d "$path_main" ]; then
 
@@ -67,8 +66,8 @@ getUpdatedProject(){
             removeDirIfIsExist "$path_temp"
             sudo cp -r "$path_main" "$path_temp"
             if [ $? != 0 ]; then
-                echo "Operation failed."
-                exit 1
+                echo "Operation failed." >&2
+                exit $?
             fi
             printf "Done.\n\n"
         else
@@ -77,8 +76,8 @@ getUpdatedProject(){
 
             cloneProject "$path_temp" "$username" "$password" "$branch" "$github_sub_url"
             if [ $? != 0 ]; then
-                echo "Clone failed."
-                exit 1
+                echo "Clone failed." >&2
+                exit $?
             fi
         fi
         printf "Done.\n\n"
@@ -87,8 +86,8 @@ getUpdatedProject(){
         echo "Update project with clone..."
         cloneProject "$path_temp" "$username" "$password" "$branch" "$github_sub_url"
         if [ $? != 0 ]; then
-            echo "Operation failed."
-            exit 1
+            echo "Operation failed." >&2
+            exit $?
         fi
         printf "Done.\n\n"
     fi

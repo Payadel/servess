@@ -16,8 +16,8 @@ echo \
 sudo apt-get update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 if [ $? != 0 ]; then
-  echo "Operation failed."
-  exit 1
+  echo "Operation failed." >&2
+  exit $?
 fi
 
 printf "Do you want to login in docker? (y/n): "

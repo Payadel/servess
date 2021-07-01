@@ -12,8 +12,8 @@ echo "Install tools..."
 echo "Install git..."
 sudo apt install -y git-all
 if [ $? != 0 ]; then
-    echo "Operation failed."
-    exit 1
+    echo "Operation failed." >&2
+    exit $?
 fi
 
 echo "done."
@@ -23,8 +23,8 @@ echo "Clonning project..."
 
 git clone https://github.com/HamidMolareza/$name.git
 if [ $? != 0 ]; then
-    echo "Operation failed."
-    exit 1
+    echo "Operation failed." >&2
+    exit $?
 fi
 
 cd "$name"
@@ -51,8 +51,8 @@ echo "Install tools..."
 echo "Install dotnet..."
 sudo "$libs_dir/dotnet5-install.sh"
 if [ $? != 0 ]; then
-    echo "Operation failed."
-    exit 1
+    echo "Operation failed." >&2
+    exit $?
 fi
 
 echo "done."
@@ -66,8 +66,8 @@ sudo mkdir -p "$install_servess_dir"
 sudo chmod 750 "$install_servess_dir"
 sudo chmod 750 ./publish.sh && (./publish.sh "$install_servess_dir")
 if [ $? != 0 ]; then
-    echo "Operation failed."
-    exit 1
+    echo "Operation failed." >&2
+    exit $?
 fi
 
 echo "done."

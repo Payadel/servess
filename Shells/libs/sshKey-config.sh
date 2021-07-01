@@ -1,7 +1,7 @@
 . /opt/shell-libs/selectEditor.sh
 if [ $? != 0 ]; then
-    echo "Can not find library files."
-    exit 1
+    echo "Can not find library files." >&2
+    exit $?
 fi
 editor=($getEditor $1)
 

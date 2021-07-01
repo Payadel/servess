@@ -13,9 +13,9 @@ run() {
         echo "DONE." >>$statusFile
     else
         echo "FAILED."
-        echo "FAILED." >>$statusFile
+        echo "FAILED." >>$statusFile >&2
         # notify-send "$process_name" 'An error has occurred.' -u critical
-        exit
+        exit $?
     fi
 
     echo "============================================================" >>$statusFile
