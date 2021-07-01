@@ -150,7 +150,7 @@ echo ""
 
 echo "Adds commands for user"
 sudo chattr -i "$bin_dir"
-sudo ln -s /bin/docker "$bin_dir" && sudo ln -s /bin/scp "$bin_dir" && sudo ln -s /bin/rm "$bin_dir" && sudo ln -s /bin/mkdir "$bin_dir" && sudo ln -s /bin/tar "$bin_dir"
+sudo ln -s /bin/docker "$bin_dir" && sudo ln -s /usr/local/bin/docker-compose "$bin_dir" && sudo ln -s /bin/scp "$bin_dir" && sudo ln -s /bin/rm "$bin_dir" && sudo ln -s /bin/mkdir "$bin_dir" && sudo ln -s /bin/tar "$bin_dir"
 if [ $? != 0 ]; then
     echo "Operation failed." >&2
     exit "$?"
