@@ -13,9 +13,9 @@ fi
 
 if [ -z "$2" ]; then
     printf "Username: "
-    read Username
+    read username
 else
-    Username=$2
+    username=$2
 fi
 
 if [ -z "$3" ]; then
@@ -39,8 +39,8 @@ echo ""
 echo "Copy deploy shell to user bin ($user_bin_dir)..."
 sudo chattr -i "$user_bin_dir"
 
-cp "$deploy_file_name" "$user_bin_dir/"
-sudo chmod 755 deploy-users.sh
+sudo chmod 755 "$deploy_file_name"
+sudo cp "$deploy_file_name" "$user_bin_dir/"
 
 sudo chattr +i "$user_bin_dir"
 echo "============================================================="
