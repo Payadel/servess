@@ -38,7 +38,6 @@ backup_dirName="server-backups"
 backup_dir="$backup_basePath/$backup_dirName"
 sudo mkdir -p "$backup_dir"
 sudo chmod 750 "$backup_dir"
-chattr +i "$backup_dir"
 
 # Status file
 statusFile="install-status.txt"
