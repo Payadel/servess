@@ -33,13 +33,17 @@ echo "======================================================================="
 
 echo "Installing shell libs..."
 cd "Shells"
-sudo mkdir -p "$libs_dir"
-sudo cp libs/* "$libs_dir/"
-sudo chmod -R 750 "$libs_dir/"
+sudo mkdir -p "$libs_dir" && sudo cp libs/* "$libs_dir/" && sudo chmod -R 750 "$libs_dir/"
+if [ $? != 0 ]; then
+    echo "Operation failed." >&2
+    exit $?
+fi
 
-mkdir -p "$shells_dir"
-sudo cp installer.sh "$shells_dir/"
-sudo chmod -R 750 "$shells_dir/"
+mkdir -p "$shells_dir" && sudo cp installer.sh "$shells_dir/" && sudo chmod -R 750 "$shells_dir/"
+if [ $? != 0 ]; then
+    echo "Operation failed." >&2
+    exit $?
+fi
 
 echo "done."
 echo "======================================================================="
@@ -62,8 +66,12 @@ echo "Installing $cliName..."
 echo "Building project..."
 cd "$currentDir/$name/$name"
 
-sudo mkdir -p "$install_servess_dir"
-sudo chmod 750 "$install_servess_dir"
+sudo mkdir -p "$install_servess_dir" && sudo chmod 750 "$install_servess_dir"
+if [ $? != 0 ]; then
+    echo "Operation failed." >&2
+    exit $?
+fi
+
 sudo chmod 750 ./publish.sh && (./publish.sh "$install_servess_dir")
 if [ $? != 0 ]; then
     echo "Operation failed." >&2
@@ -74,13 +82,25 @@ echo "done."
 
 echo "Adds execute access..."
 cd $install_servess_dir && sudo chmod 750 "$cliName"
+if [ $? != 0 ]; then
+    echo "Operation failed." >&2
+    exit $?
+fi
 echo "done."
 
 echo "Adds file to bin dir..."
 sudo ln -s "$install_servess_dir/$cliName" "$bin_path"
+if [ $? != 0 ]; then
+    echo "Operation failed." >&2
+    exit $?
+fi
 echo "done."
 
 echo "Clear git source..."
 cd $currentDir && sudo rm -r "$name/"
+if [ $? != 0 ]; then
+    echo "Operation failed." >&2
+    exit $?
+fi
 echo "done."
 echo "======================================================================="

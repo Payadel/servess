@@ -9,5 +9,5 @@
 ## Update
 
     curl -O -L https://raw.githubusercontent.com/HamidMolareza/Servess/main/update.sh
-    chmod +x install.sh
+    chmod +x update.sh
     ./update.sh
