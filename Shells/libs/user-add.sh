@@ -14,6 +14,24 @@ if [ ! -d "$home_dir" ]; then
 fi
 chmod 750 "$home_dir"
 
+#Sudo group?
+printf "Add user to sudo group? (y/n): "
+read sudo_group
+if [ "$sudo_group" == "y" ] || [ "$sudo_group" == "Y" ]; then
+    sudo usermod -aG sudo "$username"
+fi
+
+#root group?
+printf "Add user to root group? (y/n): "
+read root_group
+if [ "$root_group" == "y" ] || [ "$root_group" == "Y" ]; then
+    sudo usermod -aG root "$username"
+fi
+
 #Disables welcome banner
-sudo touch "$home_dir/.hushlogin"
-chattr +i "$home_dir/.hushlogin"
+printf "Disables welcome banner? (y/n): "
+read disable_banner
+if [ "$disable_banner" == "y" ] || [ "$disable_banner" == "Y" ]; then
+    sudo touch "$home_dir/.hushlogin"
+    chattr +i "$home_dir/.hushlogin"
+fi
