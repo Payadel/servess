@@ -56,3 +56,4 @@ if [ -d "/etc/nginx/sites-enabled" ]; then
         validate_nginx_file "$fileName"
     done
 fi
+echo ""
