@@ -1,8 +1,8 @@
-copy_file() {
+add_file_to_motd() {
     local fileName=$1
     local next_number=$2
 
-    cp "/opt/shell-libs/$fileName" "/etc/update-motd.d/$next_number-$fileName"
+    sudo ln -s "/opt/shell-libs/$fileName" "/etc/update-motd.d/$next_number-${fileName::-3}"
 }
 
 sudo apt update
@@ -32,13 +32,13 @@ if [ "$input" == "y" ] || [ "$input" == "Y" ]; then
 
     if [ "$last_number_length" == "$next_number_length" ]; then
         # last number: 98 --> new number: 99
-        copy_file "$fileName" "$next_number"
+        add_file_to_motd "$fileName" "$next_number"
     else
         # last number: 99 --> new number: 900
         new_number="9"
         for ((i = 0; i < $last_number_length; i++)); do
             new_number="${new_number}0"
         done
-        copy_file "$fileName" ""$new_number""
+        add_file_to_motd "$fileName" ""$new_number""
     fi
 fi
