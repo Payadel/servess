@@ -1,3 +1,5 @@
+#!/bin/bash
+
 validate_proxy_pass() {
     local proxy_pass=$1
     local fileName=$2
