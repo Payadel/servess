@@ -1,3 +1,10 @@
+if [ ! -f /opt/shell-libs/colors.sh ]; then
+    echo "Can't find /opt/shell-libs/colors.sh" >&2
+    echo "Operation failed." >&2
+    exit 1
+fi
+. /opt/shell-libs/colors.sh
+
 #Get inputs
 if [ -z "$1" ]; then
     printf "deploy file name: "
@@ -7,7 +14,7 @@ else
 fi
 
 if [ ! -f "$deploy_file_name" ]; then
-    echo "File is not exist."
+    echo -e "$ERROR_COLORIZED: File is not exist." >&2
     exit 1
 fi
 
@@ -37,16 +44,18 @@ echo "============================================================="
 echo ""
 
 echo "Copy deploy shell to user bin ($user_bin_dir)..."
-sudo chattr -i "$user_bin_dir"
+sudo chattr -i "$user_bin_dir" && sudo chmod 755 "$deploy_file_name" && sudo cp "$deploy_file_name" "$user_bin_dir/" && sudo chattr +i "$user_bin_dir"
 
-sudo chmod 755 "$deploy_file_name"
-sudo cp "$deploy_file_name" "$user_bin_dir/"
-
-sudo chattr +i "$user_bin_dir"
+if [ "$?" != 0 ]; then
+    echo -e "$ERROR_COLORIZED: Operation failed." >&2
+    exit "$?"
+fi
 echo "============================================================="
 echo ""
 
 echo "Create volume in $volume_dir..."
-sudo mkdir -p "$volume_dir"
-sudo chown "$username:$username" "$volume_dir"
-sudo chmod 750 "$volume_dir"
+sudo mkdir -p "$volume_dir" && sudo chown "$username:$username" "$volume_dir" && sudo chmod 750 "$volume_dir"
+if [ "$?" != 0 ]; then
+    echo -e "$ERROR_COLORIZED: Operation failed." >&2
+    exit "$?"
+fi

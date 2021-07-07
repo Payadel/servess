@@ -1,3 +1,10 @@
+if [ ! -f /opt/shell-libs/colors.sh ]; then
+    echo "Can't find /opt/shell-libs/colors.sh" >&2
+    echo "Operation failed." >&2
+    exit 1
+fi
+. /opt/shell-libs/colors.sh
+
 run() {
     process_name=$1
     execute_path=$2
@@ -9,10 +16,10 @@ run() {
     $execute_path $3 $4 $5 $6 $7 $8 $9
 
     if [ $? -eq 0 ]; then
-        echo "DONE."
+        echo -e "$DONE_COLORIZED"
         echo "DONE." >>$statusFile
     else
-        echo "FAILED."
+        echo -e "$FAILED_COLORIZED."
         echo "FAILED." >>$statusFile >&2
         # notify-send "$process_name" 'An error has occurred.' -u critical
         exit $?

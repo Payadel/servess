@@ -3,6 +3,14 @@ if [ $? != 0 ]; then
     echo "Can not find library files." >&2
     exit $?
 fi
+
+if [ ! -f /opt/shell-libs/colors.sh ]; then
+    echo "Can't find /opt/shell-libs/colors.sh" >&2
+    echo "Operation failed." >&2
+    exit 1
+fi
+. /opt/shell-libs/colors.sh
+
 editor=($getEditor $1)
 
 #========================================================================
@@ -18,7 +26,7 @@ else
         echo "Importing gilab image..."
         cat $gitlab_image_path | docker import - gitlab/gitlab-ce
     else
-        echo "Can not find any file." >&2
+        echo -e "$ERROR_COLORIZED: Can not find any file." >&2
         exit $?
     fi
 fi
@@ -39,7 +47,8 @@ fi
 mkdir -p $gitlab_home
 
 if [ $? != 0 ]; then
-    printf "\nOperation failed.\n" >&2
+    echo ""
+    echo -e "$ERROR_COLORIZED: Operation failed." >&2
     exit $?
 fi
 export GITLAB_HOME="$gitlab_home"
@@ -114,7 +123,7 @@ if [ -z $use_ssl ] || [ $use_ssl == "y" ] || [ $use_ssl == "Y" ]; then
     read fullchain
 
     if [ ! -f $fullChain ]; then
-        echo "Can not find ant file." >&2
+        echo -e "$ERROR_COLORIZED: Can not find ant file." >&2
         exit 1
     fi
 
@@ -122,7 +131,7 @@ if [ -z $use_ssl ] || [ $use_ssl == "y" ] || [ $use_ssl == "Y" ]; then
     read privkey
 
     if [ ! -f $privkey ]; then
-        echo "Can not find ant file." >&2
+        echo -e "$ERROR_COLORIZED: Can not find ant file." >&2
         exit 1
     fi
 
@@ -177,7 +186,8 @@ else
 fi
 
 if [ $? != 0 ]; then
-    printf "\nOperation failed.\n" >&2
+    echo ""
+    echo -e "$ERROR_COLORIZED: Operation failed." >&2
     exit $?
 fi
 
@@ -187,7 +197,8 @@ sudo ln -s $config_file "$nginx_dir/sites-enabled/"
 sudo nginx -t
 
 if [ $? != 0 ]; then
-    printf "\nOperation failed.\n" >&2
+    echo ""
+    echo -e "$ERROR_COLORIZED: Operation failed." >&2
     exit $?
 fi
 

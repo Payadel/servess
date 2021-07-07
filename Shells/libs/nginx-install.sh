@@ -1,3 +1,10 @@
+if [ ! -f /opt/shell-libs/colors.sh ]; then
+    echo "Can't find /opt/shell-libs/colors.sh" >&2
+    echo "Operation failed." >&2
+    exit 1
+fi
+. /opt/shell-libs/colors.sh
+
 add_file_to_motd() {
     local fileName=$1
     local next_number=$2
@@ -17,8 +24,8 @@ if [ "$input" == "y" ] || [ "$input" == "Y" ]; then
 
     #Check directory
     if [ ! -d "/etc/update-motd.d" ]; then
-        echo "Directory /etc/update-motd.d isn't exist."
-        echo "Operation failed."
+        echo "Directory /etc/update-motd.d isn't exist." >&2
+        echo -e "$ERROR_COLORIZED: Operation failed." >&2
         exit 1
     fi
 

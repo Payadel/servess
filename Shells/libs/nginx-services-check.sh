@@ -1,14 +1,21 @@
 #!/bin/bash
 
+if [ ! -f /opt/shell-libs/colors.sh ]; then
+    echo "Can't find /opt/shell-libs/colors.sh" >&2
+    echo "Operation failed." >&2
+    exit 1
+fi
+. /opt/shell-libs/colors.sh
+
 validate_proxy_pass() {
     local proxy_pass=$1
     local fileName=$2
 
     curl_result=$(curl -s -I "$proxy_pass")
     if [ -z "$curl_result" ]; then
-        echo "$fileName: Error - We have trouble with $proxy_pass"
+        echo -e "$fileName: $ERROR_COLORIZED - We have trouble with $proxy_pass"
     else
-        echo "$fileName: OK - $proxy_pass looks good."
+        echo -e "$fileName: $OK_COLORIZED - $proxy_pass looks good."
     fi
 }
 
@@ -17,9 +24,9 @@ validate_root_dir() {
     local fileName=$2
 
     if [ -d "$root_dir" ]; then
-        echo "$fileName: OK - Root dir found."
+        echo -e "$fileName: $OK_COLORIZED - Root dir found. ($root_dir)"
     else
-        echo "$fileName: Error - Can't find Root dir. ($root_dir)"
+        echo -e "$fileName: $ERROR_COLORIZED - Can't find Root dir. ($root_dir)"
     fi
 }
 
@@ -30,7 +37,7 @@ validate_nginx_file() {
     if [ -z "$proxy_pass" ]; then
         root_dir=$(awk -F ' ' -v key="root" '$1==key {print $2}' "$fileName")
         if [ -z "$root_dir" ]; then
-            echo "$fileName: Error - Can't find proxy_pass or root in this file."
+            echo -e "$fileName: $ERROR_COLORIZED - Can't find proxy_pass or root in this file."
         else
             root_dir=${root_dir::-1} #Removes execc ; char in string
             validate_root_dir "$root_dir" "$fileName"
@@ -46,7 +53,11 @@ if [ -z "$nginx_status" ]; then
     #Can't find Nginx service
     exit 0
 else
-    echo "Nginx status: ${nginx_status:13}"
+    if [ "$(systemctl is-active nginx)" = "active" ]; then
+        echo -e "Nginx: $OK_COLORIZED - ${nginx_status:13}"
+    else
+        echo -e "Nginx: $ERROR_COLORIZED - ${nginx_status:13}"
+    fi
 fi
 echo ""
 

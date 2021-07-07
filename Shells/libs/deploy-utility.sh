@@ -1,3 +1,10 @@
+if [ ! -f /opt/shell-libs/colors.sh ]; then
+    echo "Can't find /opt/shell-libs/colors.sh" >&2
+    echo "Operation failed." >&2
+    exit 1
+fi
+. /opt/shell-libs/colors.sh
+
 removeDirIfIsExist() {
     dir=$1
 
@@ -12,13 +19,13 @@ installAndBuild() {
 
     cd "$dir" && sudo npm install
     if [ $? != 0 ]; then
-        echo "Install failed." >&2
+        echo -e "$ERROR_COLORIZED: Install failed." >&2
         return 1
     fi
 
     cd "$dir" && sudo npm run build
     if [ $? != 0 ]; then
-        echo "Build failed." >&2
+        echo -e "$ERROR_COLORIZED: Build failed." >&2
         return 1
     fi
 
@@ -36,7 +43,7 @@ cloneProject() {
     sudo git clone --branch "$branch" https://"$username":"$password""@github.com/$github_sub_url" "$path"
 
     if [ $? != 0 ]; then
-        echo "Clone project failed." >&2
+        echo -e "$ERROR_COLORIZED: Clone project failed." >&2
         return 1
     fi
 }
@@ -58,7 +65,7 @@ getUpdatedProject() {
         if [ $? == 0 ]; then
             # Exit program when project already up to date.
             if [ "$pull_result" = "Already up to date." ]; then
-                echo "Project already up to date."
+                echo -e "$OK_COLORIZED: Project already up to date."
                 exit 0
             fi
 
@@ -66,7 +73,7 @@ getUpdatedProject() {
             removeDirIfIsExist "$path_temp"
             sudo cp -r "$path_main" "$path_temp"
             if [ $? != 0 ]; then
-                echo "Operation failed." >&2
+                echo -e "$ERROR_COLORIZED: Operation failed." >&2
                 exit $?
             fi
             printf "Done.\n\n"
@@ -76,7 +83,7 @@ getUpdatedProject() {
 
             cloneProject "$path_temp" "$username" "$password" "$branch" "$github_sub_url"
             if [ $? != 0 ]; then
-                echo "Clone failed." >&2
+                echo -e "$ERROR_COLORIZED: Clone failed." >&2
                 exit $?
             fi
         fi
@@ -86,7 +93,7 @@ getUpdatedProject() {
         echo "Update project with clone..."
         cloneProject "$path_temp" "$username" "$password" "$branch" "$github_sub_url"
         if [ $? != 0 ]; then
-            echo "Operation failed." >&2
+            echo -e "$ERROR_COLORIZED: Operation failed." >&2
             exit $?
         fi
         printf "Done.\n\n"
