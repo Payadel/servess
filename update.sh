@@ -48,7 +48,7 @@ echo "Installing shell libs..."
 if [ -d "$libs_dir" ]; then
     sudo rm -r "$libs_dir"
 fi
-sudo mkdir -p "$libs_dir" && sudo cp -r "$git_shells_dir/libs/" "$libs_dir/" && sudo chmod -R 750 "$libs_dir"
+sudo mkdir -p "$libs_dir" && sudo cp -r $git_shells_dir/libs/* "$libs_dir/" && sudo chmod -R 750 "$libs_dir"
 if [ $? != 0 ]; then
     echo "Operation failed." >&2
     clear_git "$git_dir"
@@ -106,8 +106,8 @@ fi
 echo "done."
 
 echo "Creating ln to $bin_path..."
-if [ -f "$bin_path/$cliName" ]; then
-    sudo rm "$bin_path/$cliName"
+if [ -f "$bin_path" ]; then
+    sudo rm "$bin_path"
 fi
 sudo ln -s "$install_servess_dir/$cliName" "$bin_path"
 if [ $? != 0 ]; then
