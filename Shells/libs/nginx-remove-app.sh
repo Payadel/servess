@@ -148,8 +148,10 @@ sudo systemctl restart nginx
 if [ $? != 0 ]; then
     echo -e "$WARNING_COLORIZED: Operation failed." >&2
 fi
+echo -e "$DONE_COLORIZED"
 
 curl_test=$(curl -s -I $proxy_pass)
 if [ $? = 0 ]; then
+    echo ""
     echo -e "$WARNING_COLORIZED: $proxy_pass is still running. Terminate it."
 fi
