@@ -30,7 +30,7 @@ if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ] || [ -z "$5" ] || [ 
         printf "App url(proxy pass) (like: http://localhost:3000): "
         read proxy_pass
 
-        printf "Nginx installed directory (default: /etc/nginx): "
+        printf "Nginx directory (default: /etc/nginx): "
         read nginx_dir
         if [ -z $nginx_dir ]; then
             nginx_dir="/etc/nginx"
