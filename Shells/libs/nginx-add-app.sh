@@ -5,6 +5,36 @@ if [ ! -f /opt/shell-libs/colors.sh ]; then
 fi
 . /opt/shell-libs/colors.sh
 
+fileOrDir_must_exist() {
+    local path="$1"
+    local type="$2"
+    if [ "$type" != "d" ] && [ "$type" != "f" ]; then
+        echo -e "$ERROR_COLORIZED: input is not valid. type must be d for directory or f for file." >&2
+        exit 1
+    fi
+
+    if [ ! -$type $path ]; then
+        echo -e "$ERROR_COLORIZED: Can not find $path." >&2
+        exit 1
+    fi
+}
+
+proxy_must_valid() {
+    local proxy_pass="$1"
+
+    curl -s -I $proxy_pass
+    if [ $? != 0 ]; then
+        printf "We have trouble with $proxy_pass. Are you sure proxy pass is valid? (y/n): "
+        read isProxyPassValid
+
+        if [ "$isProxyPassValid" != "y" ] && [ "$isProxyPassValid" != "Y" ]; then
+            echo -e "${YELLOW}Operation canceled.${ENDCOLOR}"
+            exit 0
+        fi
+        echo ""
+    fi
+}
+
 #Get inputs:
 if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ] || [ -z "$5" ] || [ -z "$6" ]; then
     if [ ! -z "$1" ]; then
@@ -14,9 +44,11 @@ if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ] || [ -z "$5" ] || [ 
     else
         printf "SSL fullchain path (like: fullchain.pem): "
         read ssl_fullchain_path
+        fileOrDir_must_exist "$ssl_fullchain_path" "f"
 
         printf "SSL private key path (like: privkey.pem): "
         read ssl_privateKey_path
+        fileOrDir_must_exist "$ssl_privateKey_path" "f"
 
         printf "App domain (like: example.com): "
         read server_name
@@ -29,58 +61,36 @@ if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ] || [ -z "$5" ] || [ 
 
         printf "App url(proxy pass) (like: http://localhost:3000): "
         read proxy_pass
+        proxy_must_valid "$proxy_pass"
 
         printf "Nginx directory (default: /etc/nginx): "
         read nginx_dir
         if [ -z $nginx_dir ]; then
             nginx_dir="/etc/nginx"
         fi
+        fileOrDir_must_exist "$nginx_dir" "d"
     fi
 else
     #Inputs are complete
     ssl_fullchain_path=$1
+    fileOrDir_must_exist "$ssl_fullchain_path" "f"
+
     ssl_privateKey_path=$2
+    fileOrDir_must_exist "$ssl_privateKey_path" "f"
+
     server_name=$3
     log_dir=$4
+
     proxy_pass=$5
+    proxy_must_valid "$proxy_pass"
+
     nginx_dir=$6
+    fileOrDir_must_exist "$nginx_dir" "d"
 fi
 #=======================================================================================
 echo ""
 
 #Validations
-
-#ssl_fullchain_path
-if [ ! -f $ssl_fullchain_path ]; then
-    echo -e "$ERROR_COLORIZED: Can not find $ssl_fullchain_path." >&2
-    exit 1
-fi
-
-#ssl_privateKey_path
-if [ ! -f $ssl_privateKey_path ]; then
-    echo -e "$ERROR_COLORIZED: Can not find $ssl_privateKey_path." >&2
-    exit 1
-fi
-
-#nginx_dir
-if [ ! -d $nginx_dir ]; then
-    echo -e "$ERROR_COLORIZED: Can not find directory: $nginx_dir" >&2
-    exit 1
-fi
-
-#proxy_pass
-curl -s -I $proxy_pass
-if [ $? != 0 ]; then
-    printf "We have trouble with $proxy_pass. Are you sure proxy pass is valid? (y/n): "
-    read isProxyPassValid
-
-    if [ "$isProxyPassValid" != "y" ] && [ "$isProxyPassValid" != "Y" ]; then
-        echo -e "${YELLOW}Operation canceled.${ENDCOLOR}"
-        exit 0
-    fi
-    echo ""
-fi
-
 echo "ssl_fullchain_path: $ssl_fullchain_path"
 echo "ssl_privateKey_path: $ssl_privateKey_path"
 echo "server_name: $server_name"
