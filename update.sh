@@ -19,15 +19,19 @@ echo "======================================================================="
 
 echo "Installing shell libs..."
 cd "Shells"
-sudo rm -r "$libs_dir"
+if [ -d "$libs_dir" ]; then
+    sudo rm -r "$libs_dir"
+fi
 sudo mkdir -p "$libs_dir" && sudo cp libs/* "$libs_dir/" && sudo chmod -R 750 "$libs_dir/"
 if [ $? != 0 ]; then
     echo "Operation failed." >&2
     exit $?
 fi
 
-rm -r "$shells_dir"
-mkdir -p "$shells_dir" && sudo cp installer.sh "$shells_dir/" && sudo chmod -R 750 "$shells_dir/"
+if [ -d "$shells_dir" ]; then
+    sudo rm -r "$shells_dir"
+fi
+sudo mkdir -p "$shells_dir" && sudo cp installer.sh "$shells_dir/" && sudo chmod -R 750 "$shells_dir/"
 if [ $? != 0 ]; then
     echo "Operation failed." >&2
     exit $?
@@ -40,7 +44,10 @@ echo "Installing $cliName..."
 echo "Building project..."
 cd "$currentDir/$name/$name"
 
-sudo rm -r "$install_servess_dir" && sudo mkdir -p "$install_servess_dir" && sudo chmod 750 "$install_servess_dir"
+if [ -d "$install_servess_dir" ]; then
+    sudo rm -r "$install_servess_dir"
+fi
+sudo mkdir -p "$install_servess_dir" && sudo chmod 750 "$install_servess_dir"
 if [ $? != 0 ]; then
     echo "Operation failed." >&2
     exit $?
@@ -63,7 +70,10 @@ fi
 echo "done."
 
 echo "Adds file to bin dir..."
-sudo rm "$bin_path" && sudo ln -s "$install_servess_dir/$cliName" "$bin_path"
+if [ -f "$bin_path" ]; then
+    sudo rm "$bin_path"
+fi
+sudo ln -s "$install_servess_dir/$cliName" "$bin_path"
 if [ $? != 0 ]; then
     echo "Operation failed." >&2
     exit $?
