@@ -39,7 +39,7 @@ there_must_be_a_site() {
     if [[ ! -d "$sites_available_dir" && ! -d "$sites_enabled_dir" ]] ||
         [[ "$available_sites_count" == 0 && "$enabled_sites_count" == 0 ]]; then
 
-        echo "${BOLD_YELLOW}There are no sites for delete.${ENDCOLOR}"
+        echo -e "${BOLD_YELLOW}There are no any site for delete.${ENDCOLOR}"
         echo "$sites_available_dir and $sites_enabled_dir were checked."
         echo "Operation canceled."
         exit 0
@@ -67,6 +67,7 @@ if [ -z "$1" ] || [ -z "$2" ]; then
         #is there any site?
         there_must_be_a_site "$sites_available_dir" "$sites_enabled_dir"
 
+        echo ""
         echo -e "${BOLD_GREEN}Enabled sites: ${ENDCOLOR}"
         ls -lh "$sites_enabled_dir"
         echo ""
@@ -148,7 +149,7 @@ if [ $? != 0 ]; then
     echo -e "$WARNING_COLORIZED: Operation failed." >&2
 fi
 
-curl -s -I $proxy_pass
+curl_test=$(curl -s -I $proxy_pass)
 if [ $? = 0 ]; then
     echo -e "$WARNING_COLORIZED: $proxy_pass is still running. Terminate it."
 fi
