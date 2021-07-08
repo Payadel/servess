@@ -20,6 +20,14 @@ libs_dir="$install_dir/shell-libs"
 shells_dir="$install_dir/shells"
 git_dir="$currentDir/$name"
 
+if [ -d "$name" ]; then
+    printf "Directory $name is exist. do you want replace it? (y/n): "
+    read delete
+    if [ "$delete" = "y" ] || [ "$delete" = "Y" ]; then
+        sudo rm "$name"
+    fi
+fi
+
 git clone https://github.com/HamidMolareza/$name.git
 if [ $? != 0 ]; then
     echo "Operation failed." >&2
