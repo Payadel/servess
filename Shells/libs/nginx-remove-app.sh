@@ -30,34 +30,71 @@ delete() {
     fi
 }
 
-nginx_dir="/etc/nginx"
-printf "Nginx directory (default: $nginx_dir): "
-read input
-if [ ! -z $input ]; then
-    nginx_dir="$input"
+there_must_be_a_site() {
+    local sites_available_dir="$1"
+    local sites_enabled_dir="$2"
+
+    available_sites_count=$(ls "$sites_available_dir" | wc -l)
+    enabled_sites_count=$(ls "$sites_enabled_dir" | wc -l)
+    if [[ ! -d "$sites_available_dir" && ! -d "$sites_enabled_dir" ]] ||
+        [[ "$available_sites_count" == 0 && "$enabled_sites_count" == 0 ]]; then
+
+        echo "${BOLD_YELLOW}There are no sites for delete.${ENDCOLOR}"
+        echo "$sites_available_dir and $sites_enabled_dir were checked."
+        echo "Operation canceled."
+        exit 0
+    fi
+}
+
+if [ -z "$1" ] || [ -z "$2" ]; then
+    #One or all inputs empty
+    if [ ! -z "$1" ]; then
+        #Too few arguments
+        echo -e "$ERROR_COLORIZED: Too few arguments." >&2
+        exit 1
+    else
+        #Get arguments from terminal
+        nginx_dir="/etc/nginx"
+        printf "Nginx directory (default: $nginx_dir): "
+        read input
+        if [ ! -z $input ]; then
+            nginx_dir="$input"
+        fi
+
+        sites_available_dir="$nginx_dir/sites-available"
+        sites_enabled_dir="$nginx_dir/sites-enabled"
+
+        #is there any site?
+        there_must_be_a_site "$sites_available_dir" "$sites_enabled_dir"
+
+        echo -e "${BOLD_GREEN}Enabled sites: ${ENDCOLOR}"
+        ls -lh "$sites_enabled_dir"
+        echo ""
+
+        printf "Input site(file) name: "
+        read target_fileName
+    fi
+else
+    #Get agruments from command line
+    nginx_dir="$1"
+    sites_available_dir="$nginx_dir/sites-available"
+    sites_enabled_dir="$nginx_dir/sites-enabled"
+
+    #is there any site?
+    there_must_be_a_site "$sites_available_dir" "$sites_enabled_dir"
+
+    target_fileName="$2"
 fi
 
-sites_available_dir="$nginx_dir/sites-available"
-sites_enabled_dir="$nginx_dir/sites-enabled"
-
-file_counts=$(ls "$sites_enabled_dir" | wc -l)
-if [ ! -d "$sites_enabled_dir" ] || [ "$ls "$sites_enabled_dir" | wc -l" = 0 ]; then
-    echo "${BOLD_YELLOW}There are no active sites for delete.${ENDCOLOR}"
-    echo "Operation canceled."
-    exit 0
-fi
-
-echo -e "${BOLD_GREEN}Enabled sites: ${ENDCOLOR}"
-ls -lh "$sites_enabled_dir"
-echo ""
-
-printf "Input site(file) name: "
-read target_fileName
-fileName="$sites_enabled_dir/$target_fileName"
-
-if [ ! -f "$fileName" ]; then
-    echo -e "$ERROR_COLORIZED: Input is not valid." >&2
-    exit 1
+if [ -f "$sites_enabled_dir/$target_fileName" ]; then
+    fileName="$sites_enabled_dir/$target_fileName"
+else
+    if [ -f "$sites_available_dir/$target_fileName" ]; then
+        fileName="$sites_available_dir/$target_fileName"
+    else
+        echo -e "$ERROR_COLORIZED: Input is not valid. The file not found." >&2
+        exit 1
+    fi
 fi
 
 proxy_pass=$(awk -F ' ' -v key="proxy_pass" '$1==key {print $2}' "$fileName")
@@ -87,16 +124,22 @@ if [ $? != 0 ]; then
     echo -e "$WARNING_COLORIZED: Operation failed." >&2
 fi
 
-echo "Removing $sites_enabled_dir/$target_fileName..."
-sudo rm "$sites_enabled_dir/$target_fileName"
-if [ $? != 0 ]; then
-    echo -e "$ERROR_COLORIZED: Operation failed." >&2
-    exit 1
+if [ -f "$sites_enabled_dir/$target_fileName" ]; then
+    echo "Removing $sites_enabled_dir/$target_fileName..."
+    sudo rm "$sites_enabled_dir/$target_fileName"
+
+    if [ $? != 0 ]; then
+        echo -e "$WARNING_COLORIZED: Operation failed." >&2
+    fi
 fi
 
 if [ -f "$sites_available_dir/$target_fileName" ]; then
     echo "Removing $sites_available_dir/$target_fileName..."
     sudo rm "$sites_available_dir/$target_fileName"
+
+    if [ $? != 0 ]; then
+        echo -e "$WARNING_COLORIZED: Operation failed." >&2
+    fi
 fi
 
 echo "Restarting nginx service..."

@@ -35,6 +35,18 @@ proxy_must_valid() {
     fi
 }
 
+rollback_operations() {
+    local nginx_dir="$1"
+    local server_name="$2"
+
+    printf "Do you want remove files? (y/n): "
+    read input
+
+    if [ "$input" = "y" ] || [ "$input" = "Y" ]; then
+        /opt/shell-libs/nginx-remove-app.sh "$nginx_dir" "$server_name"
+    fi
+}
+
 #Get inputs:
 if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ] || [ -z "$5" ] || [ -z "$6" ]; then
     if [ ! -z "$1" ]; then
@@ -120,7 +132,7 @@ if [ -f "$configFile_path" ]; then
 
     sudo rm "$configFile_path"
     if [ $? != 0 ]; then
-        echo -e "$ERROR_COLORIZED: Error in config file!" >&2
+        echo -e "$ERROR_COLORIZED: Can't remove $configFile_path" >&2
         exit $?
     fi
 fi
@@ -184,32 +196,15 @@ if [ $? == 0 ]; then
 else
     echo -e "$ERROR_COLORIZED: Operation failed." >&2
 
-    printf "Do you want remove $configFile_path? (y/n): "
-    read remove_configFile
-
-    if [ "$remove_configFile" = "y" ] || [ "$remove_configFile" = "Y" ]; then
-        echo "Remove $configFile_path..."
-        sudo rm "$configFile_path"
-    fi
-
+    rollback_operations "$nginx_dir" "$server_name"
     exit $?
 fi
 
 nginx -t
 if [ $? != 0 ]; then
-    echo -e "$ERROR_COLORIZED: Error in config file!" >&2
+    echo -e "$ERROR_COLORIZED: Error in config file." >&2
 
-    printf "Do you want remove files? (y/n): "
-    read remove_files
-
-    if [ "$remove_files" = "y" ] || [ "$remove_files" = "Y" ]; then
-        echo "Remove $configFile_path..."
-        sudo rm "$configFile_path"
-
-        echo "Remove $configFile_ln_path..."
-        sudo rm "$configFile_ln_path"
-    fi
-
+    rollback_operations "$nginx_dir" "$server_name"
     exit $?
 fi
 
