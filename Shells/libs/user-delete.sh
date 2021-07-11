@@ -94,3 +94,5 @@ else
     sudo userdel -f "$username"
 fi
 exit_if_operation_failed "$?"
+
+echo -e "$DONE_COLORIZED"
