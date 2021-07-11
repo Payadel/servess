@@ -4,6 +4,12 @@
         <OutputType>Exe</OutputType>
         <TargetFramework>net5.0</TargetFramework>
         <AssemblyName>servess</AssemblyName>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="FunctionalUtility" Version="1.1.6" />
+      <PackageReference Include="ModelsValidation" Version="1.2.8" />
+    </ItemGroup>
 
 </Project>
