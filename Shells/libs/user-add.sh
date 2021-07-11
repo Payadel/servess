@@ -30,19 +30,13 @@ fi
 
 home_dir="/home/$username"
 sudo adduser --home "$home_dir" "$username"
-if [ $? != 0 ]; then
-    echo -e "$ERROR_COLORIZED: Operation failed." >&2
-    exit $?
-fi
+exit_if_operation_failed "$?"
 
 if [ ! -d "$home_dir" ]; then
-    sudo mkdir "$home_dir" && sudo chown "$username:$username" "$home_dir"
+    sudo mkdir -p "$home_dir"
 fi
-chmod 750 "$home_dir"
-if [ $? != 0 ]; then
-    echo -e "$ERROR_COLORIZED: Operation failed." >&2
-    exit $?
-fi
+sudo chown "$username:$username" "$home_dir" && chmod 750 "$home_dir"
+exit_if_operation_failed "$?"
 
 #Sudo group?
 printf "Add user to sudo group? (y/n): "
