@@ -48,7 +48,7 @@ fi
 #============================================================================
 
 #log out active sessions
-user_sessions=$(pgrep -u test)
+user_sessions=$(pgrep -u $username)
 if [ ! -z "$user_sessions" ]; then
     echo ""
     printf "The user still loggin. do you want log out user? (y/n): "
