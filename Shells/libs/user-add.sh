@@ -28,7 +28,28 @@ else
     username=$1
 fi
 
+if [ user_exists "$username" ]; then
+    echo -e "$ERROR_COLORIZED: The user already exists." >&2
+    exit 1
+fi
+
+#Home directory
 home_dir="/home/$username"
+printf "Input user home directory (default: $home_dir): "
+read input_home_dir
+if [ ! -z "$input_home_dir" ]; then
+    home_dir="$input_home_dir"
+fi
+
+if [ -d "$home_dir" ]; then
+    printf "Directory $home_dir is exist. do you want delete it? (y/n): "
+    read delete_home_dir
+    if [ "$delete_home_dir" = "y" ] || [ "$delete_home_dir" = "Y" ]; then
+        chattr -R -i "$home_dir" && sudo rm -r "$home_dir"
+        exit_if_operation_failed "$?"
+    fi
+fi
+
 sudo adduser --home "$home_dir" "$username"
 exit_if_operation_failed "$?"
 

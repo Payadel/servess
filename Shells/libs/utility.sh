@@ -24,3 +24,10 @@ say_warning_if_operation_failed() {
         fi
     fi
 }
+
+#Return 0 if user found
+user_exists() {
+    local user="$1"
+
+    id "$user" &>/dev/null
+}
