@@ -43,7 +43,7 @@ if [ ! -z "$input_home_dir" ]; then
 fi
 
 if [ -d "$home_dir" ]; then
-    printf "Directory $home_dir is exist. do you want delete it? (y/n): "
+    printf "Directory $home_dir already exists. do you want delete it? (y/n): "
     read delete_home_dir
     if [ "$delete_home_dir" = "y" ] || [ "$delete_home_dir" = "Y" ]; then
         chattr -R -i "$home_dir" && sudo rm -r "$home_dir"

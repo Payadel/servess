@@ -15,6 +15,12 @@ else
     username=$1
 fi
 
+id "$username" &>/dev/null
+if [ "$?" != "0" ]; then
+    echo -e "$ERROR_COLORIZED: The user does not exist." >&2
+    exit 1
+fi
+
 homeDir=$(getent passwd "$username" | cut -d: -f6)
 if [ "$?" != 0 ] || [ -z "$homeDir" ]; then
     echo -e "$ERROR_COLORIZED: Can't detect user home directory."
@@ -25,7 +31,16 @@ if [ "$?" != 0 ] || [ -z "$homeDir" ]; then
         echo -e "$ERROR_COLORIZED: Invalid directory."
         exit 1
     fi
+
+    ls -lh "$homeDir"
+    echo -e "$WARNING_COLORIZED: Are you sure? (y/n): "
+    read confirm_user_dir
+    if [ "$confirm_user_dir" != "y" ] && [ "$confirm_user_dir" != "Y" ]; then
+        echo -e "$INFO_COLORIZED: Operation canceled."
+        exit 0
+    fi
 fi
+
 echo -e "$INFO_COLORIZED: User home directory detected: $homeDir"
 
 #log out active sessions
@@ -34,7 +49,7 @@ if [ ! -z "$user_sessions" ]; then
     echo ""
     printf "The user still loggin. do you want log out user? (y/n): "
     read logOut_user
-    if [ "$logOut_user" -eq "y" ] || [ "$logOut_user" -eq "Y" ]; then
+    if [ "$logOut_user" = "y" ] || [ "$logOut_user" = "Y" ]; then
         sudo killall -9 -u "$username"
         exit_if_operation_failed "$?"
     else
@@ -50,7 +65,7 @@ say_warning_if_operation_failed "$?"
 #Create backup from user directory
 printf "do you wand create backup from user data? (y/n): "
 read create_backup
-if [ "$create_backup" -eq "y" ] || [ "$create_backup" -eq "Y" ]; then
+if [ "$create_backup" = "y" ] || [ "$create_backup" = "Y" ]; then
     backup_dir="/var/server-backups"
     printf "Backup directory (default: $backup_dir): "
     read input
@@ -70,7 +85,7 @@ fi
 
 printf "do you wand delete user home dir? (y/n): "
 read delete_user_homeDir
-if [ "$delete_user_homeDir" -eq "y" ] || [ "$delete_user_homeDir" -eq "Y" ]; then
+if [ "$delete_user_homeDir" = "y" ] || [ "$delete_user_homeDir" = "Y" ]; then
     sudo chattr -R -i "$homeDir" && sudo userdel -r -f "$username"
 else
     sudo userdel -f "$username"
