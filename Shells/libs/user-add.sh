@@ -1,9 +1,25 @@
-if [ ! -f /opt/shell-libs/colors.sh ]; then
-    echo "Can't find /opt/shell-libs/colors.sh" >&2
+#Libs
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ]; then
+    echo "Can't find libs." >&2
     echo "Operation failed." >&2
     exit 1
 fi
 . /opt/shell-libs/colors.sh
+. /opt/shell-libs/utility.sh
+
+delete_user_if_operation_failed() {
+    local code="$1"
+
+    if [ "$code" != 0 ]; then
+        echo -e "$ERROR_COLORIZED: Operation failed."
+        printf "Do you want delete user? (y/n): "
+        read delete_user
+
+        if [ "$delete_user" = "y" ] || [ "$delete_user" = "Y" ]; then
+            /opt/shell-libs/user-delete.sh "$delete_user"
+        fi
+    fi
+}
 
 if [ -z $1 ]; then
     printf "Username: "
@@ -31,27 +47,31 @@ fi
 #Sudo group?
 printf "Add user to sudo group? (y/n): "
 read sudo_group
-if [ "$sudo_group" -eq "y" ] || [ "$sudo_group" -eq "Y" ]; then
+if [ "$sudo_group" = "y" ] || [ "$sudo_group" = "Y" ]; then
     sudo usermod -aG sudo "$username"
+    delete_user_if_operation_failed "$?"
 fi
 
 #root group?
 printf "Add user to root group? (y/n): "
 read root_group
-if [ "$root_group" -eq "y" ] || [ "$root_group" -eq "Y" ]; then
+if [ "$root_group" = "y" ] || [ "$root_group" = "Y" ]; then
     sudo usermod -aG root "$username"
+    delete_user_if_operation_failed "$?"
 fi
 
 #Disables welcome banner
 printf "Disables welcome banner? (y/n): "
 read disable_banner
-if [ "$disable_banner" -eq "y" ] || [ "$disable_banner" -eq "Y" ]; then
+if [ "$disable_banner" = "y" ] || [ "$disable_banner" = "Y" ]; then
     sudo touch "$home_dir/.hushlogin" && chattr +i "$home_dir/.hushlogin"
+    delete_user_if_operation_failed "$?"
 fi
 
 #Disables welcome banner
 printf "force expire the password (the user must change password after login)? (y/n): "
 read expire_password
-if [ "$expire_password" -eq "y" ] || [ "$expire_password" -eq "Y" ]; then
+if [ "$expire_password" = "y" ] || [ "$expire_password" = "Y" ]; then
     sudo passwd -e "$username"
+    say_warning_if_operation_failed "$?"
 fi

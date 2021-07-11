@@ -71,7 +71,7 @@ fi
 printf "do you wand delete user home dir? (y/n): "
 read delete_user_homeDir
 if [ "$delete_user_homeDir" -eq "y" ] || [ "$delete_user_homeDir" -eq "Y" ]; then
-    sudo userdel -r -f "$username"
+    sudo chattr -R -i "$homeDir" && sudo userdel -r -f "$username"
 else
     sudo userdel -f "$username"
 fi
