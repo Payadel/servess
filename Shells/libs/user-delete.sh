@@ -37,8 +37,9 @@ else
     echo -e "$INFO_COLORIZED: User home directory detected: $homeDir"
 fi
 
-ls -lh "$homeDir"
-echo -e "$WARNING_COLORIZED: Are you sure? (y/n): "
+ls -dlh "$homeDir"
+echo -e "$WARNING_COLORIZED!"
+printf "Are you sure? (y/n): "
 read confirm_user_dir
 if [ "$confirm_user_dir" != "y" ] && [ "$confirm_user_dir" != "Y" ]; then
     echo -e "$INFO_COLORIZED: Operation canceled."
