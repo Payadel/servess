@@ -10,7 +10,7 @@ fi
 delete_user_if_operation_failed() {
     local code="$1"
 
-    if [ "$code" != 0 ]; then
+    if [ "$code" != "0" ]; then
         echo -e "$ERROR_COLORIZED: Operation failed."
         printf "Do you want delete user? (y/n): "
         read delete_user
@@ -21,6 +21,13 @@ delete_user_if_operation_failed() {
     fi
 }
 
+#Return 0 if user found
+user_exists() {
+    local user="$1"
+    id "$user" &>/dev/null
+    return "$?"
+}
+
 if [ -z $1 ]; then
     printf "Username: "
     read username
@@ -28,7 +35,7 @@ else
     username=$1
 fi
 
-if [ user_exists "$username" ]; then
+if [ user_exists "$username" = "0" ]; then
     echo -e "$ERROR_COLORIZED: The user already exists." >&2
     exit 1
 fi
