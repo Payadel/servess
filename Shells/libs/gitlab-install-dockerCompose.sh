@@ -4,12 +4,13 @@ if [ $? != 0 ]; then
     exit $?
 fi
 
-if [ ! -f /opt/shell-libs/colors.sh ]; then
-    echo "Can't find /opt/shell-libs/colors.sh" >&2
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ]; then
+    echo "Can't find libs." >&2
     echo "Operation failed." >&2
     exit 1
 fi
 . /opt/shell-libs/colors.sh
+. /opt/shell-libs/utility.sh
 
 editor=($getEditor $1)
 
@@ -31,10 +32,7 @@ else
     fi
 fi
 
-if [ $? != 0 ]; then
-    printf "\nOperation failed.\n" >&2
-    exit $?
-fi
+exit_if_operation_failed "$?"
 
 #========================================================================
 #Sets gitlab home dir
@@ -46,11 +44,7 @@ if [ ! -z $input ]; then
 fi
 mkdir -p $gitlab_home
 
-if [ $? != 0 ]; then
-    echo ""
-    echo -e "$ERROR_COLORIZED: Operation failed." >&2
-    exit $?
-fi
+exit_if_operation_failed "$?"
 export GITLAB_HOME="$gitlab_home"
 #========================================================================
 #Creates gitlab compose file
@@ -89,10 +83,7 @@ cd $compose_dir && echo "web:
     - '$GITLAB_HOME/logs:/var/log/gitlab'
     - '$GITLAB_HOME/data:/var/opt/gitlab'" >>$docker_filename
 
-if [ $? != 0 ]; then
-    printf "\nOperation failed.\n" >&2
-    exit $?
-fi
+exit_if_operation_failed "$?"
 
 cd $compose_dir && $editor $docker_filename
 #========================================================================
@@ -101,10 +92,7 @@ echo "Run gitlab compose file..."
 
 cd $compose_dir && docker-compose up -d
 
-if [ $? != 0 ]; then
-    printf "\nOperation failed.\n" >&2
-    exit $?
-fi
+exit_if_operation_failed "$?"
 
 echo "Done."
 #========================================================================
@@ -184,22 +172,13 @@ else
 }" >>$config_file
 
 fi
-
-if [ $? != 0 ]; then
-    echo ""
-    echo -e "$ERROR_COLORIZED: Operation failed." >&2
-    exit $?
-fi
+exit_if_operation_failed "$?"
 
 $editor $config_file
 
 sudo ln -s $config_file "$nginx_dir/sites-enabled/"
 sudo nginx -t
 
-if [ $? != 0 ]; then
-    echo ""
-    echo -e "$ERROR_COLORIZED: Operation failed." >&2
-    exit $?
-fi
+exit_if_operation_failed "$?"
 
 sudo systemctl restart nginx

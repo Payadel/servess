@@ -64,7 +64,7 @@ fi
 
 #lock user to prevent login again
 sudo passwd -l "$username"
-say_warning_if_operation_failed "$?"
+show_warning_if_operation_failed "$?"
 
 #Create backup from user directory
 printf "do you wand create backup from user data? (y/n): "

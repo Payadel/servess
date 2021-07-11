@@ -1,9 +1,11 @@
-if [ ! -f /opt/shell-libs/colors.sh ]; then
-    echo "Can't find /opt/shell-libs/colors.sh" >&2
+#Libs
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ]; then
+    echo "Can't find libs." >&2
     echo "Operation failed." >&2
     exit 1
 fi
 . /opt/shell-libs/colors.sh
+. /opt/shell-libs/utility.sh
 
 #Get inputs
 if [ -z "$1" ]; then
@@ -46,16 +48,10 @@ echo ""
 echo "Copy deploy shell to user bin ($user_bin_dir)..."
 sudo chattr -i "$user_bin_dir" && sudo chmod 755 "$deploy_file_name" && sudo cp "$deploy_file_name" "$user_bin_dir/" && sudo chattr +i "$user_bin_dir"
 
-if [ "$?" != 0 ]; then
-    echo -e "$ERROR_COLORIZED: Operation failed." >&2
-    exit "$?"
-fi
+exit_if_operation_failed "$?"
 echo "============================================================="
 echo ""
 
 echo "Create volume in $volume_dir..."
 sudo mkdir -p "$volume_dir" && sudo chown "$username:$username" "$volume_dir" && sudo chmod 750 "$volume_dir"
-if [ "$?" != 0 ]; then
-    echo -e "$ERROR_COLORIZED: Operation failed." >&2
-    exit "$?"
-fi
+exit_if_operation_failed "$?"

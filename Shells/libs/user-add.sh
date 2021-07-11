@@ -89,5 +89,5 @@ printf "force expire the password (the user must change password after login)? (
 read expire_password
 if [ "$expire_password" = "y" ] || [ "$expire_password" = "Y" ]; then
     sudo passwd -e "$username"
-    say_warning_if_operation_failed "$?"
+    show_warning_if_operation_failed "$?"
 fi

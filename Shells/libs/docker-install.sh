@@ -1,3 +1,10 @@
+if [ ! -f /opt/shell-libs/utility.sh ]; then
+  echo "Can't find libs." >&2
+  echo "Operation failed." >&2
+  exit 1
+fi
+. /opt/shell-libs/utility.sh
+
 sudo apt-get update
 
 sudo apt-get install \
@@ -15,10 +22,7 @@ echo \
 
 sudo apt-get update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io
-if [ $? != 0 ]; then
-  echo "Operation failed." >&2
-  exit $?
-fi
+exit_if_operation_failed "$?"
 
 printf "Do you want to login in docker? (y/n): "
 read loginToDocker

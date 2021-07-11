@@ -1,9 +1,11 @@
-if [ ! -f /opt/shell-libs/colors.sh ]; then
-    echo "Can't find /opt/shell-libs/colors.sh" >&2
+#Libs
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ]; then
+    echo "Can't find libs." >&2
     echo "Operation failed." >&2
     exit 1
 fi
 . /opt/shell-libs/colors.sh
+. /opt/shell-libs/utility.sh
 
 # sudo ln -s /bin/bash /bin/rbash
 echo "Add Restrict User"
@@ -28,18 +30,12 @@ if [ -d "$home_dir" ]; then
     sudo rm -r "$home_dir"
 fi
 sudo mkdir "$home_dir" && sudo chown "$username:$username" "$home_dir" && chmod 750 "$home_dir"
-if [ $? != 0 ]; then
-    echo -e "$ERROR_COLORIZED: Operation failed." >&2
-    exit $?
-fi
+exit_if_operation_failed "$?"
 
 #Creates bin dir & Configs permission
 bin_dir="$home_dir/bin"
 sudo mkdir -p "$bin_dir" && chmod 755 "$bin_dir" && chattr +i "$bin_dir"
-if [ $? != 0 ]; then
-    echo -e "$ERROR_COLORIZED: Operation failed." >&2
-    exit $?
-fi
+exit_if_operation_failed "$?"
 
 #Creates .profile & Configs permission
 profile="$home_dir/.profile"
@@ -48,10 +44,7 @@ if [ -f "$profile" ]; then
 fi
 echo "readonly PATH=$bin_dir" >>$profile
 sudo chown root:root $profile && sudo chmod 644 $profile && chattr +i $profile
-if [ $? != 0 ]; then
-    echo -e "$ERROR_COLORIZED: Operation failed." >&2
-    exit $?
-fi
+exit_if_operation_failed "$?"
 
 #Creates .bashrc & Configs permission
 bashrc="$home_dir/.bashrc"
@@ -60,10 +53,7 @@ if [ -f "$bashrc" ]; then
 fi
 echo ". $profile" >>$bashrc
 sudo chown root:root $bashrc && sudo chmod 644 $bashrc && chattr +i $bashrc
-if [ $? != 0 ]; then
-    echo -e "$ERROR_COLORIZED: Operation failed." >&2
-    exit $?
-fi
+exit_if_operation_failed "$?"
 
 #Creates .bash_profile & Configs permission
 bash_profile="$home_dir/.bash_profile"
@@ -72,17 +62,11 @@ if [ -f "$bash_profile" ]; then
 fi
 echo ". $profile" >>$bash_profile
 sudo chown root:root $bash_profile && sudo chmod 644 $bash_profile && chattr +i $bash_profile
-if [ $? != 0 ]; then
-    echo -e "$ERROR_COLORIZED: Operation failed." >&2
-    exit $?
-fi
+exit_if_operation_failed "$?"
 
 #Disables welcome banner
 sudo touch "$home_dir/.hushlogin" && chattr +i "$home_dir/.hushlogin"
-if [ $? != 0 ]; then
-    echo -e "$ERROR_COLORIZED: Operation failed." >&2
-    exit $?
-fi
+exit_if_operation_failed "$?"
 
 echo -e "${BOLD_GREEN}You can add command for $username with below command:${ENDCOLOR}"
 echo "sudo ln -s /bin/*command* $bin_dir/"

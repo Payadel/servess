@@ -1,9 +1,11 @@
-if [ ! -f /opt/shell-libs/colors.sh ]; then
-    echo "Can't find /opt/shell-libs/colors.sh" >&2
+#Libs
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ]; then
+    echo "Can't find libs." >&2
     echo "Operation failed." >&2
     exit 1
 fi
 . /opt/shell-libs/colors.sh
+. /opt/shell-libs/utility.sh
 
 removeDirIfIsExist() {
     dir=$1
@@ -72,30 +74,23 @@ getUpdatedProject() {
             echo "Get Copy..."
             removeDirIfIsExist "$path_temp"
             sudo cp -r "$path_main" "$path_temp"
-            if [ $? != 0 ]; then
-                echo -e "$ERROR_COLORIZED: Operation failed." >&2
-                exit $?
-            fi
+            exit_if_operation_failed "$?"
+
             printf "Done.\n\n"
         else
             echo "Pull request failed."
             echo "Try update project with clone..."
 
             cloneProject "$path_temp" "$username" "$password" "$branch" "$github_sub_url"
-            if [ $? != 0 ]; then
-                echo -e "$ERROR_COLORIZED: Clone failed." >&2
-                exit $?
-            fi
+            exit_if_operation_failed "$?"
         fi
         printf "Done.\n\n"
 
     else
         echo "Update project with clone..."
         cloneProject "$path_temp" "$username" "$password" "$branch" "$github_sub_url"
-        if [ $? != 0 ]; then
-            echo -e "$ERROR_COLORIZED: Operation failed." >&2
-            exit $?
-        fi
+        exit_if_operation_failed "$?"
+
         printf "Done.\n\n"
     fi
 }

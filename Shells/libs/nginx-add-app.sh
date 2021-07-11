@@ -1,9 +1,10 @@
-if [ ! -f /opt/shell-libs/colors.sh ]; then
-    echo "Can't find /opt/shell-libs/colors.sh" >&2
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ]; then
+    echo "Can't find libs." >&2
     echo "Operation failed." >&2
     exit 1
 fi
 . /opt/shell-libs/colors.sh
+. /opt/shell-libs/utility.sh
 
 fileOrDir_must_exist() {
     local path="$1"
@@ -131,10 +132,7 @@ if [ -f "$configFile_path" ]; then
     fi
 
     sudo rm "$configFile_path"
-    if [ $? != 0 ]; then
-        echo -e "$ERROR_COLORIZED: Can't remove $configFile_path" >&2
-        exit $?
-    fi
+    exit_if_operation_failed "$?" "$ERROR_COLORIZED: Can't remove $configFile_path"
 fi
 #==============================================================================
 #Start...
@@ -211,9 +209,6 @@ fi
 echo "Restart nginx service..."
 sudo systemctl restart nginx
 
-if [ $? != 0 ]; then
-    echo -e "$ERROR_COLORIZED: Error in config file!" >&2
-    exit $?
-fi
+exit_if_operation_failed "$?" "$ERROR_COLORIZED: Error in config file!"
 
 echo -e "${BOLD_GREEN}Done${ENDCOLOR}"

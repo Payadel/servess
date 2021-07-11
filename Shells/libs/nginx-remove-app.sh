@@ -1,9 +1,10 @@
-if [ ! -f /opt/shell-libs/colors.sh ]; then
-    echo "Can't find /opt/shell-libs/colors.sh" >&2
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ]; then
+    echo "Can't find libs." >&2
     echo "Operation failed." >&2
     exit 1
 fi
 . /opt/shell-libs/colors.sh
+. /opt/shell-libs/utility.sh
 
 delete() {
     local name=$1
@@ -109,49 +110,37 @@ else
     proxy_pass=${proxy_pass::-1} #Removes execc ; char in string
 fi
 
-if [ $? != 0 ]; then
-    echo -e "$WARNING_COLORIZED: Operation failed." >&2
-fi
+show_warning_if_operation_failed "$?"
 
 access_log=$(awk -F ' ' -v key="access_log" '$1==key {print $2}' "$fileName")
 delete "access log" "$access_log" "f"
-if [ $? != 0 ]; then
-    echo -e "$WARNING_COLORIZED: Operation failed." >&2
-fi
+show_warning_if_operation_failed "$?"
 
 error_log=$(awk -F ' ' -v key="error_log" '$1==key {print $2}' "$fileName")
 delete "error log" "$error_log" "f"
-if [ $? != 0 ]; then
-    echo -e "$WARNING_COLORIZED: Operation failed." >&2
-fi
+show_warning_if_operation_failed "$?"
 
 if [ -f "$sites_enabled_dir/$target_fileName" ]; then
     echo "Removing $sites_enabled_dir/$target_fileName..."
     sudo rm "$sites_enabled_dir/$target_fileName"
 
-    if [ $? != 0 ]; then
-        echo -e "$WARNING_COLORIZED: Operation failed." >&2
-    fi
+    show_warning_if_operation_failed "$?"
 fi
 
 if [ -f "$sites_available_dir/$target_fileName" ]; then
     echo "Removing $sites_available_dir/$target_fileName..."
     sudo rm "$sites_available_dir/$target_fileName"
 
-    if [ $? != 0 ]; then
-        echo -e "$WARNING_COLORIZED: Operation failed." >&2
-    fi
+    show_warning_if_operation_failed "$?"
 fi
 
 echo "Restarting nginx service..."
 sudo systemctl restart nginx
-if [ $? != 0 ]; then
-    echo -e "$WARNING_COLORIZED: Operation failed." >&2
-fi
+show_warning_if_operation_failed "$?"
+
 echo -e "$DONE_COLORIZED"
 
 curl_test=$(curl -s -I $proxy_pass)
-if [ $? = 0 ]; then
-    echo ""
-    echo -e "$WARNING_COLORIZED: $proxy_pass is still running. Terminate it."
-fi
+
+echo ""
+show_warning_if_operation_failed "$?" "$WARNING_COLORIZED: $proxy_pass is still running. Terminate it."

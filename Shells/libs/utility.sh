@@ -1,3 +1,10 @@
+if [ ! -f /opt/shell-libs/colors.sh ]; then
+    echo "Can't find libs." >&2
+    echo "Operation failed." >&2
+    exit 1
+fi
+. /opt/shell-libs/colors.sh
+
 exit_if_operation_failed() {
     local code="$1"
     local message="$2"
@@ -12,7 +19,7 @@ exit_if_operation_failed() {
     fi
 }
 
-say_warning_if_operation_failed() {
+show_warning_if_operation_failed() {
     local code="$1"
     local message="$2"
 
