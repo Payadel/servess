@@ -135,7 +135,8 @@ namespace servess {
 
             if (missingParameters.Count > 0) {
                 return MethodResult.Fail(new MissInputError(missingParameters.Select(missingParameter =>
-                    new KeyValuePair<string, string>(Utility.GetLongParameterName(missingParameter.InputAttribute.CliName),
+                    new KeyValuePair<string, string>(
+                        Utility.GetLongParameterName(missingParameter.InputAttribute.CliName),
                         "Argument is required."))));
             }
 
@@ -146,7 +147,8 @@ namespace servess {
             IEnumerable<InputSchemeModel> inputSchemeModels) =>
             GetNameFromFlag(inputModel.CliName)
                 .TryOnSuccess(pureName => inputSchemeModels.SingleOrDefault(
-                    inputSchemeModel => inputSchemeModel.InputAttribute.ShortName == pureName))
+                    inputSchemeModel => inputSchemeModel.InputAttribute.ShortName == pureName || 
+                                        inputSchemeModel.InputAttribute.CliName == pureName))
                 .OnSuccessFailWhen(inputSchemeModel => inputSchemeModel is null, //TODO: Check
                     new ArgumentValidationError(new KeyValuePair<string, string>(inputModel.CliName,
                         "Parameter isn't valid.")))
@@ -155,8 +157,8 @@ namespace servess {
                         inputSchemeModel!.InputAttribute.ParameterName, inputModel.Value));
 
         private static MethodResult<string> GetNameFromFlag(string flag) =>
-            TryExtensions.Try(() => flag.StartsWith('-')
-                ? flag.Remove(0, 1) // -name
-                : flag.Remove(0, 2)); // --name
+            TryExtensions.Try(() => flag.StartsWith("--")
+                ? flag.Remove(0, 2) // --name
+                : flag.Remove(0, 1)); // -name
     }
 }
