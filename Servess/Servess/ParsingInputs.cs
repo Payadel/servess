@@ -145,20 +145,19 @@ namespace servess {
 
         private static MethodResult<InputModel> UpdateParameterName(InputModel inputModel,
             IEnumerable<InputSchemeModel> inputSchemeModels) =>
-            GetNameFromFlag(inputModel.CliName)
-                .TryOnSuccess(pureName => inputSchemeModels.SingleOrDefault(
-                    inputSchemeModel => inputSchemeModel.InputAttribute.ShortName == pureName || 
-                                        inputSchemeModel.InputAttribute.CliName == pureName))
-                .OnSuccessFailWhen(inputSchemeModel => inputSchemeModel is null, //TODO: Check
+            FindSchemeModel(inputModel.CliName, inputSchemeModels)
+                .OnSuccessFailWhen(inputSchemeModel => inputSchemeModel is null,
                     new ArgumentValidationError(new KeyValuePair<string, string>(inputModel.CliName,
                         "Parameter isn't valid.")))
-                .OnSuccess(inputSchemeModel =>
-                    new InputModel(inputModel.CliName,
-                        inputSchemeModel!.InputAttribute.ParameterName, inputModel.Value));
+                .OnSuccess(inputSchemeModel => new InputModel(
+                    inputModel.CliName, inputSchemeModel!.InputAttribute.ParameterName, inputModel.Value));
 
-        private static MethodResult<string> GetNameFromFlag(string flag) =>
-            TryExtensions.Try(() => flag.StartsWith("--")
-                ? flag.Remove(0, 2) // --name
-                : flag.Remove(0, 1)); // -name
+        private static MethodResult<InputSchemeModel?> FindSchemeModel(string inputParameter,
+            IEnumerable<InputSchemeModel> inputSchemeModels) =>
+            Utility.GetNameFromFlag(inputParameter)
+                .TryOnSuccess(pureName => Utility.IsLongParameterName(inputParameter)
+                    .Map(isLongName => inputSchemeModels.SingleOrDefault(
+                        inputSchemeModel => !isLongName && inputSchemeModel.InputAttribute.ShortName == pureName ||
+                                            isLongName && inputSchemeModel.InputAttribute.CliName == pureName)));
     }
 }
