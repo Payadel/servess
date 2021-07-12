@@ -1,13 +1,12 @@
-﻿using System;
-using servess.Attributes;
+﻿using servess.Attributes;
 
 //TODO: Ensure command, input and other attribute isn't repetitive.
 
 namespace servess.Libs {
     [Scope("sshd", "sshd config")]
-    public static class Sshd {
+    public static partial class Sshd {
         private const string ConfigFilePath = @"/etc/ssh/sshd_config";
-
+        //TODO: Convert to new style
         // [Command("disable-password", "disable login with password")]
         // public static void DisablePassword(string[] inputs) {
         //     switch (inputs.Length) {
@@ -64,24 +63,6 @@ namespace servess.Libs {
         //     static bool IsValidInput(string value) => value.ToLower() == "true" || value.ToLower() == "false";
         //     static bool IsValidOption(string value) => value.ToLower() == "-p" || value.ToLower() == "--path";
         // }
-
-        [Command("disable-password", "disable login with password")]
-        public class DisablePasswordClass {
-            [Input("path", "p", "SSHD file path", false)]
-            public string Path { get; }
-
-            [Input("disable-password", "d",
-                "A boolean that indicates whether the password is active or not.")]
-            public bool DisablePassword { get; }
-            
-            //TODO: Test optional & non-value property
-
-            [Operator]
-            public void Operation(string path, bool disablePassword) {
-                Console.WriteLine($"path: {path}");
-                Console.WriteLine($"DisablePassword: {disablePassword}");
-            }
-        }
 
         // [Command("connection-timeout", "SSH Connection Timeout")]
         // public static void ConnectionTimeout(string[] inputs) {

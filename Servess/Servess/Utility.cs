@@ -9,6 +9,7 @@ using FunctionalUtility.ResultUtility;
 using ModelsValidation;
 using servess.Attributes;
 using servess.MethodErrors;
+using servess.Models;
 
 //TODO: Separate?
 
@@ -29,7 +30,6 @@ namespace servess {
                         type.IsClass && type.IsPublic && type.GetCustomAttribute<ScopeAttribute>() is not null)
                     .ToList());
 
-        //TODO: Check result (not found)
         public static MethodResult<Type> GetScope(IEnumerable<Type> scopes, string targetScope) {
             var scopeList = scopes.ToList();
             if (scopeList.IsNullOrEmpty() || targetScope.IsNullOrEmpty()) {
@@ -46,9 +46,9 @@ namespace servess {
 
         public static MethodResult<IEnumerable<Type>> GetCommandClasses([Required] Type scope) =>
             Method.MethodParametersMustValid(new[] {scope})
-                .TryOnSuccess(() => scope.GetNestedTypes()
+                .TryOnSuccess(() => scope.GetNestedTypes(BindingFlags.Public)
                     .Where(type =>
-                        type.IsClass && type.IsPublic && type.GetCustomAttribute<CommandAttribute>() is not null));
+                        type.IsClass && type.GetCustomAttribute<CommandAttribute>() is not null));
 
         public static MethodResult<Type> GetCommandClass(Type scope, string command) {
             command = command.ToLower();
@@ -56,7 +56,7 @@ namespace servess {
                 .TryOnSuccess(commandClasses => commandClasses.SingleOrDefault(commandClass =>
                         commandClass.GetCustomAttribute<CommandAttribute>()!.Name.ToLower() == command)
                     .Map(result => result is null
-                        ? ScopeCommandsHelp(scope)
+                        ? ScopeHelp(scope)
                             .OnSuccess(helpStr => MethodResult<Type>.Fail(new CommandNotFoundError(message: helpStr)))
                         : MethodResult<Type>.Ok(result)));
         }
@@ -115,7 +115,7 @@ namespace servess {
         public static string ScopesHelp(IEnumerable<Type> scopes) {
             var sb = new StringBuilder();
             sb.AppendLine()
-                .AppendLine($" Usage:  {AppConstants.AppName} SCOPE COMMAND [OPTIONS]")
+                .AppendLine($" Usage:  {AppConstants.AppName} SCOPE COMMAND [INPUTS]")
                 .AppendLine()
                 .AppendLine(" Scopes:");
 
@@ -128,12 +128,12 @@ namespace servess {
             return sb.ToString();
         }
 
-        public static MethodResult<string> ScopeCommandsHelp(Type targetScope) =>
+        public static MethodResult<string> ScopeHelp(Type targetScope) =>
             GetCommandClasses(targetScope)
                 .OnSuccess(commands => {
                     var sb = new StringBuilder();
                     sb.AppendLine()
-                        .AppendLine($" Usage:  {AppConstants.AppName} {targetScope.Name} COMMAND [OPTIONS]")
+                        .AppendLine($" Usage:  {AppConstants.AppName} {targetScope.Name.ToLower()} COMMAND [INPUTS]")
                         .AppendLine()
                         .AppendLine(" Commands:");
 
@@ -147,5 +147,26 @@ namespace servess {
 
                     return MethodResult<string>.Ok(sb.ToString());
                 });
+
+        public static MethodResult<string> CommandHelp(string scopeName, string commandName,
+            IEnumerable<InputSchemeModel> inputSchemes) =>
+            TryExtensions.Try(() => {
+                var sb = new StringBuilder();
+                sb.AppendLine()
+                    .AppendLine(
+                        $" Usage:  {AppConstants.AppName} {scopeName} {commandName} [INPUTS]")
+                    .AppendLine()
+                    .AppendLine(" Inputs:");
+
+                foreach (var inputAttribute in inputSchemes.Select(inputScheme => inputScheme.InputAttribute)
+                ) {
+                    var isRequired = inputAttribute.IsRequired ? "required" : "optional";
+                    var hasValue = inputAttribute.HasValue ? "key-value" : "flag only";
+                    sb.AppendLine(
+                        $"\t-{inputAttribute.ShortName}  --{inputAttribute.CliName}\t{inputAttribute.Description}\t{isRequired}\t{hasValue}");
+                }
+
+                return MethodResult<string>.Ok(sb.ToString());
+            });
     }
 }

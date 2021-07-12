@@ -4,7 +4,8 @@ using ModelsValidation.ResultDetails;
 
 namespace servess.MethodErrors {
     public class MissInputError : ArgumentValidationError {
-        public MissInputError(KeyValuePair<string, string> modelError, string? title = "Missing input", string? message = null,
+        public MissInputError(KeyValuePair<string, string> modelError, string? title = "Missing input",
+            string? message = null,
             Exception? exception = null, bool showDefaultMessageToUser = true, object? moreDetail = null) : base(
             modelError, title, message, exception, showDefaultMessageToUser, moreDetail) { }
 
