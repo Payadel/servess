@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using FunctionalUtility.Extensions;
@@ -14,10 +15,13 @@ namespace servess {
     public static class ParsingInputs {
         public static MethodResult<List<InputModel>> Parse(List<string> args, List<InputSchemeModel> inputSchemes) =>
             ParseInputs(args)
-                .OnSuccess(inputs => PairWithCommandAttributes(inputs, inputSchemes)
-                    .OnSuccess(inputList => EnsureRequireFlagsExist(inputList, inputSchemes)
-                        .OnSuccess(() => inputList)));
+                .OnSuccess(inputs => UpdateNamesWithPropertyNames(inputs, inputSchemes))
+                .OnSuccess(inputs => EnsureArgumentCountValid(inputs, inputSchemes)
+                    .OnSuccess(() => EnsureValueTypesAreCorrect(inputs, inputSchemes))
+                    .OnSuccess(updatedInputs => EnsureRequireFlagsExist(updatedInputs, inputSchemes)
+                        .OnSuccess(() => updatedInputs)));
 
+        //Convert inputs to InputModel and ensures base structure is valid.
         private static MethodResult<IEnumerable<InputModel>> ParseInputs(
             IReadOnlyList<string> inputs) {
             var result = new List<InputModel>();
@@ -60,56 +64,80 @@ namespace servess {
             return MethodResult<IEnumerable<InputModel>>.Ok(result);
         }
 
-        private static MethodResult<List<InputModel>> PairWithCommandAttributes(
-            IEnumerable<InputModel> inputs,
-            IEnumerable<InputSchemeModel> inputSchemeModels) {
-            var inputList = inputs.ToList();
-            var inputSchemeList = inputSchemeModels.ToList();
-
-            if (inputList.IsNullOrEmpty()) {
-                return MethodResult<List<InputModel>>.Ok(inputList);
+        private static MethodResult EnsureArgumentCountValid(IReadOnlyCollection<InputModel> inputModels,
+            ICollection inputSchemes) {
+            if (inputModels.Count > inputSchemes.Count) {
+                return MethodResult.Fail(new BadRequestError(title: "Too many arguments",
+                    message: $"maximum {inputSchemes.Count} inputs are expected."));
             }
 
-            var methodResult = inputList.SelectResults(input =>
-                UpdateParameterName(input, inputSchemeList)
-                    .OnSuccess(updatedInput => EnsureValueTypeIsCorrect(updatedInput, inputSchemeList)));
-            return !methodResult.IsSuccess
-                ? MethodResult<List<InputModel>>.Fail(methodResult.Detail)
-                : MethodResult<List<InputModel>>.Ok(methodResult.Value);
+            var uniqueItems = inputModels
+                .Select(item => item.ParameterName)
+                .Distinct()
+                .Count();
+            if (uniqueItems != inputModels.Count) {
+                return MethodResult.Fail(new BadRequestError(title: "Duplicate Input",
+                    message: $"Duplicate input is not allowed."));
+            }
+
+            return MethodResult.Ok();
         }
+
+        private static MethodResult<List<InputModel>> UpdateNamesWithPropertyNames(
+            IEnumerable<InputModel> inputs,
+            IEnumerable<InputSchemeModel> inputSchemeModels) =>
+            inputs.SelectResults(input =>
+                UpdateParameterName(input, inputSchemeModels));
+
+        private static MethodResult<List<InputModel>> EnsureValueTypesAreCorrect(IEnumerable<InputModel> inputModels,
+            IEnumerable<InputSchemeModel> inputSchemes) =>
+            inputModels.SelectResults(inputModel => EnsureValueTypeIsCorrect(inputModel, inputSchemes));
 
         private static MethodResult<InputModel> EnsureValueTypeIsCorrect(InputModel inputModel,
-            IEnumerable<InputSchemeModel> commandAttributes) {
-            var targetCommandAttribute = commandAttributes
-                .Single(commandAttribute =>
-                    commandAttribute.InputAttribute.CliName == inputModel.CliName);
+            IEnumerable<InputSchemeModel> inputSchemes) =>
+            TryExtensions.Try(() => inputSchemes.Single(inputScheme =>
+                    inputScheme.InputAttribute.ParameterName == inputModel.ParameterName))
+                .OnFail(() => MethodResult<InputSchemeModel>.Fail(new ArgumentValidationError(
+                    new KeyValuePair<string, string>(inputModel.CliName, "Argument isn't valid."))))
+                .TryOnSuccess(targetSchemeModel => EnsureValueTypeIsCorrect(targetSchemeModel, inputModel))
+                .OnFail(() => MethodResult<InputModel>.Fail(new ArgumentValidationError(
+                    new KeyValuePair<string, string>(inputModel.CliName, "Value isn't valid."))));
 
-            if (!targetCommandAttribute.InputAttribute.HasValue)
-                return MethodResult<InputModel>.Ok(inputModel);
+        private static MethodResult<InputModel> EnsureValueTypeIsCorrect(InputSchemeModel schemeModel,
+            InputModel inputModel) => schemeModel.InputAttribute.HasValue
+            ? ChangeType(inputModel.Value, schemeModel.PropertyInfo.PropertyType)
+                .OnSuccess(value =>
+                    MethodResult<InputModel>.Ok(new InputModel(inputModel.CliName, inputModel.ParameterName, value)))
+            : ValueMustNull(inputModel.Value)
+                .OnSuccess(() => new InputModel(inputModel.CliName, inputModel.ParameterName, true));
 
-            try {
-                var value = Convert.ChangeType(inputModel.Value, targetCommandAttribute.PropertyInfo.PropertyType);
-                return MethodResult<InputModel>.Ok(new InputModel(inputModel.CliName, inputModel.ParameterName, value));
+        private static MethodResult<object?> ChangeType(object? value, Type targetType) =>
+            TryExtensions.Try(() => Utility.IsNullable(targetType)
+                ? Convert.ChangeType(value, Nullable.GetUnderlyingType(targetType)!)
+                : Convert.ChangeType(value, targetType));
+
+
+        private static MethodResult ValueMustNull(object? value) =>
+            value is null
+                ? MethodResult.Ok()
+                : MethodResult.Fail(new BadRequestError());
+
+        private static MethodResult EnsureRequireFlagsExist(IReadOnlyCollection<InputModel> inputModels,
+            IEnumerable<InputSchemeModel> inputSchemeModels) {
+            var missingParameters = (from inputSchemeModel in inputSchemeModels
+                where inputSchemeModel.InputAttribute.IsRequired
+                let requiredParameter = inputModels.SingleOrDefault(inputModel =>
+                    inputModel.ParameterName == inputSchemeModel.InputAttribute.ParameterName)
+                where requiredParameter?.Value is null
+                select inputSchemeModel).ToList();
+
+            if (missingParameters.Count > 0) {
+                return MethodResult.Fail(new MissInputError(missingParameters.Select(missingParameter =>
+                    new KeyValuePair<string, string>(missingParameter.InputAttribute.ParameterName,
+                        "Argument is required."))));
             }
-            catch (Exception) {
-                return MethodResult<InputModel>.Fail(
-                    new TypeMissMachError(
-                        new KeyValuePair<string, string>(inputModel.CliName, "Type isn't valid")));
-            }
-        }
 
-        private static MethodResult EnsureRequireFlagsExist(IEnumerable<InputModel> inputModels,
-            IEnumerable<InputSchemeModel> commandAttributes) {
-            var missInputs = commandAttributes.Where(commandAttribute =>
-                    commandAttribute.InputAttribute.IsRequired &&
-                    inputModels.All(input => input.CliName != commandAttribute.InputAttribute.CliName))
-                .Select(commandAttribute => commandAttribute.InputAttribute).ToList();
-            if (!missInputs.Any()) {
-                return MethodResult.Ok();
-            }
-
-            return MethodResult.Fail(new MissInputError(missInputs.Select(missInput =>
-                new KeyValuePair<string, string>(missInput.CliName, "Argument is required."))));
+            return MethodResult.Ok();
         }
 
         private static MethodResult<InputModel> UpdateParameterName(InputModel inputModel,
@@ -121,12 +149,12 @@ namespace servess {
                     new ArgumentValidationError(new KeyValuePair<string, string>(inputModel.CliName,
                         "Parameter isn't valid.")))
                 .OnSuccess(inputSchemeModel =>
-                    new InputModel(inputSchemeModel!.InputAttribute.CliName,
-                        inputSchemeModel.InputAttribute.ParameterName, inputModel.Value));
+                    new InputModel(inputModel.CliName,
+                        inputSchemeModel!.InputAttribute.ParameterName, inputModel.Value));
 
         private static MethodResult<string> GetNameFromFlag(string flag) =>
             TryExtensions.Try(() => flag.StartsWith('-')
-                ? flag.Remove(0, 1)
-                : flag.Remove(0, 2));
+                ? flag.Remove(0, 1) // -name
+                : flag.Remove(0, 2)); // --name
     }
 }

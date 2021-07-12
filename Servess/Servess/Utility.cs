@@ -168,5 +168,7 @@ namespace servess {
 
                 return MethodResult<string>.Ok(sb.ToString());
             });
+
+        public static bool IsNullable(Type type) => Nullable.GetUnderlyingType(type) != null;
     }
 }
