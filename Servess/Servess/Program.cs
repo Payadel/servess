@@ -143,8 +143,13 @@ namespace servess {
             TryExtensions.Try(() => Activator.CreateInstance(commandClassType))
                 .OnSuccess(commandObj => UpdateCommandClassProperties(inputModels, commandObj!)
                     .TryOnSuccess(() => operatorMethod.Invoke(commandObj, null))
-                    .OnSuccess(invokeResult =>
-                        invokeResult as MethodResult<string?> ?? MethodResult<string?>.Ok(null)));
+                    .OnSuccess(invokeResult => {
+                        return invokeResult switch {
+                            MethodResult<string?> methodResultWithString => methodResultWithString,
+                            MethodResult simpleMethodResult => simpleMethodResult.MapMethodResult((string?) null),
+                            _ => MethodResult<string?>.Ok(null)
+                        };
+                    }));
 
         private static MethodResult UpdateCommandClassProperties(
             IEnumerable<InputModel> inputModels, object commandObj) =>
