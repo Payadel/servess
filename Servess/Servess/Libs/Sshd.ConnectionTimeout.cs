@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Linq;
 using FunctionalUtility.Extensions;
+using FunctionalUtility.ResultDetails.Errors;
 using FunctionalUtility.ResultUtility;
 using servess.Attributes;
 
@@ -24,6 +25,10 @@ namespace servess.Libs {
                 const string clientAliveIntervalKey = "ClientAliveInterval";
                 const string clientAliveCountMaxKey = "ClientAliveCountMax";
                 var path = Path ?? ConfigFilePath;
+
+                if (!File.Exists(path)) {
+                    return MethodResult.Fail(new NotFoundError(title: "File Not Found", message: $"Can't find {path}"));
+                }
 
                 return TryExtensions.Try(() => {
                     var lines = File.ReadAllLines(path).ToList();
