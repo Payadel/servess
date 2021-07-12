@@ -31,6 +31,11 @@ namespace servess {
 
                                 break;
                             }
+                            case ExceptionError exceptionError:
+                                Console.WriteLine(exceptionError.Message);
+                                Console.WriteLine();
+                                Console.WriteLine(exceptionError.StackTrace);
+                                break;
                             case NotFoundError:
                             case BadRequestError:
                             default:
