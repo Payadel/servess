@@ -99,17 +99,19 @@ namespace servess {
                     inputScheme.InputAttribute.ParameterName == inputModel.ParameterName))
                 .OnFail(() => MethodResult<InputSchemeModel>.Fail(new ArgumentValidationError(
                     new KeyValuePair<string, string>(inputModel.CliName, "Argument isn't valid."))))
-                .TryOnSuccess(targetSchemeModel => EnsureValueTypeIsCorrect(targetSchemeModel, inputModel))
-                .OnFail(() => MethodResult<InputModel>.Fail(new ArgumentValidationError(
-                    new KeyValuePair<string, string>(inputModel.CliName, "Value isn't valid."))));
+                .OnSuccess(targetSchemeModel => EnsureValueTypeIsCorrect(targetSchemeModel, inputModel));
 
         private static MethodResult<InputModel> EnsureValueTypeIsCorrect(InputSchemeModel schemeModel,
             InputModel inputModel) => schemeModel.InputAttribute.HasValue
             ? ChangeType(inputModel.Value, schemeModel.PropertyInfo.PropertyType)
                 .OnSuccess(value =>
                     MethodResult<InputModel>.Ok(new InputModel(inputModel.CliName, inputModel.ParameterName, value)))
+                .OnFail(() => MethodResult<InputModel>.Fail(new ArgumentValidationError(
+                    new KeyValuePair<string, string>(inputModel.CliName, "Value isn't valid."))))
             : ValueMustNull(inputModel.Value)
-                .OnSuccess(() => new InputModel(inputModel.CliName, inputModel.ParameterName, true));
+                .OnSuccess(() => new InputModel(inputModel.CliName, inputModel.ParameterName, true))
+                .OnFail(() => MethodResult<InputModel>.Fail(new ArgumentValidationError(
+                    new KeyValuePair<string, string>(inputModel.CliName, "This argument does not accept input."))));
 
         private static MethodResult<object?> ChangeType(object? value, Type targetType) =>
             TryExtensions.Try(() => Utility.IsNullable(targetType)
@@ -133,7 +135,7 @@ namespace servess {
 
             if (missingParameters.Count > 0) {
                 return MethodResult.Fail(new MissInputError(missingParameters.Select(missingParameter =>
-                    new KeyValuePair<string, string>(missingParameter.InputAttribute.ParameterName,
+                    new KeyValuePair<string, string>(Utility.GetLongParameterName(missingParameter.InputAttribute.CliName),
                         "Argument is required."))));
             }
 

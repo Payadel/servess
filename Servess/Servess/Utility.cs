@@ -153,8 +153,7 @@ namespace servess {
             TryExtensions.Try(() => {
                 var sb = new StringBuilder();
                 sb.AppendLine()
-                    .AppendLine(
-                        $" Usage:  {AppConstants.AppName} {scopeName} {commandName} [INPUTS]")
+                    .AppendLine($" Usage:  {AppConstants.AppName} {scopeName} {commandName} [INPUTS]")
                     .AppendLine()
                     .AppendLine(" Inputs:");
 
@@ -163,11 +162,14 @@ namespace servess {
                     var isRequired = inputAttribute.IsRequired ? "required" : "optional";
                     var hasValue = inputAttribute.HasValue ? "key-value" : "flag only";
                     sb.AppendLine(
-                        $"\t-{inputAttribute.ShortName}  --{inputAttribute.CliName}\t{inputAttribute.Description}\t{isRequired}\t{hasValue}");
+                        $"\t-{GetShortParameterName(inputAttribute.ShortName)}  {GetLongParameterName(inputAttribute.CliName)}\t{inputAttribute.Description}\t{isRequired}\t{hasValue}");
                 }
 
                 return MethodResult<string>.Ok(sb.ToString());
             });
+
+        public static string GetLongParameterName(string pureName) => "--" + pureName;
+        public static string GetShortParameterName(string pureName) => "-" + pureName;
 
         public static bool IsNullable(Type type) => Nullable.GetUnderlyingType(type) != null;
     }
