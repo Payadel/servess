@@ -1,4 +1,7 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
+using FunctionalUtility.Extensions;
 using FunctionalUtility.ResultUtility;
 using servess.Attributes;
 
@@ -14,33 +17,35 @@ namespace servess.Libs {
             public bool? DisablePassword { get; set; }
 
             [Input("enable", "e",
-                "Enable password", nameof(EnablePassword), isRequired: true, hasValue: true)]
+                "Enable password", nameof(EnablePassword), isRequired: false, hasValue: false)]
             public bool? EnablePassword { get; set; }
 
-            //TODO: Test non-value property
-
             [Operator]
-            public void Operation() {
-                if (DisablePassword is null && EnablePassword is null) {
-                    Console.WriteLine("Error! at least one flag must set.");
-                    return;
+            public MethodResult Operation() {
+                switch (DisablePassword) {
+                    case null when EnablePassword is null:
+                        Console.WriteLine("Error! at least one of the flags must set.");
+                        return MethodResult.Ok();
+                    case not null when EnablePassword is not null:
+                        Console.WriteLine("Error! Can't set both disable and enable flags.");
+                        return MethodResult.Ok();
                 }
 
-                if (DisablePassword is not null && EnablePassword is not null) {
-                    Console.WriteLine("Error! Can't set both disable and enable flag.");
-                    return;
-                }
+                const string permitRootLogin = "PermitRootLogin";
+                var path = Path ?? ConfigFilePath;
 
-                //TODO: ****
-                Print(Path, nameof(Path));
-                Print(DisablePassword, nameof(DisablePassword));
-                Print(EnablePassword, nameof(EnablePassword));
+                return TryExtensions.Try(() => {
+                    var lines = File.ReadAllLines(path).ToList();
+                    using var fileStream = new FileStream(path, FileMode.Open, FileAccess.ReadWrite,
+                        FileShare.Read);
 
-                static void Print(object? value, string name) {
-                    Console.Write($"{name}: ");
-                    var valueDisplay = value ?? "NULL";
-                    Console.WriteLine(valueDisplay);
-                }
+                    var methodResult = Utility.AddOrUpdateKeyValue(lines, permitRootLogin,
+                        DisablePassword is not null ? "without-password" : "yes");
+
+                    fileStream.Close();
+
+                    return methodResult.OnSuccess(newLines => File.WriteAllLines(path, newLines));
+                });
             }
         }
     }
