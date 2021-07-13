@@ -9,14 +9,14 @@ fi
 
 #Get inputs
 if [ -z "$1" ]; then
-    printf "deploy file name: "
-    read deploy_file_name
+    printf "deploy shells directory: "
+    read deploy_shells_directory
 else
-    deploy_file_name=$1
+    deploy_shells_directory=$1
 fi
 
-if [ ! -f "$deploy_file_name" ]; then
-    echo -e "$ERROR_COLORIZED: File is not exist." >&2
+if [ ! -d "$deploy_shells_directory" ]; then
+    echo -e "$ERROR_COLORIZED: Directory is not exist." >&2
     exit 1
 fi
 
@@ -46,7 +46,7 @@ echo "============================================================="
 echo ""
 
 echo "Copy deploy shell to user bin ($user_bin_dir)..."
-sudo chattr -i "$user_bin_dir" && sudo chmod 755 "$deploy_file_name" && sudo cp "$deploy_file_name" "$user_bin_dir/" && sudo chattr +i "$user_bin_dir"
+sudo chattr -i "$user_bin_dir" && sudo chmod -R 755 "$deploy_shells_directory" && sudo cp $deploy_shells_directory/* "$user_bin_dir/" && sudo chattr +i "$user_bin_dir"
 
 exit_if_operation_failed "$?"
 echo "============================================================="
