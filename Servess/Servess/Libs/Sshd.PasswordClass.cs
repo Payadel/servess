@@ -20,6 +20,9 @@ namespace servess.Libs {
             [Input("enable", "e",
                 "Enable password", nameof(EnablePassword), isRequired: false, hasValue: false)]
             public bool? EnablePassword { get; set; }
+            
+            private const string Separator = " ";
+            private const string CommentSign = "#";
 
             [Operator]
             public MethodResult Operation() {
@@ -45,7 +48,7 @@ namespace servess.Libs {
                         FileShare.Read);
 
                     var methodResult = Utility.AddOrUpdateKeyValue(lines, permitRootLogin,
-                        DisablePassword is not null ? "without-password" : "yes");
+                        DisablePassword is not null ? "without-password" : "yes",Separator, CommentSign);
 
                     fileStream.Close();
 

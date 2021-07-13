@@ -73,44 +73,91 @@ namespace servess {
 
         public static MethodResult<List<string>> AddOrUpdateKeyValue([Required] List<string> lines,
             [Required] string key,
-            [Required] string value) {
-            var methodResult = Method.MethodParametersMustValid(new object?[] {lines, key, value})
-                .OnSuccess(() => FindLineIndex(lines, key));
-            if (!methodResult.IsSuccess) {
-                return MethodResult<List<string>>.Fail(methodResult.Detail);
-            }
+            [Required] string value, string separator,
+            [Required] string commentSign) =>
+            Method.MethodParametersMustValid(new object?[] {lines, key, value, separator ,commentSign})
+                .OnSuccess(() => FindLineIndex(lines, key, separator,commentSign))
+                .TryOnSuccess(lineIndex => GenerateKeyValue(key, value)
+                    .Map(result => {
+                        if (lineIndex < 0) {
+                            lines.Add("");
+                            lines.Add(result);
+                        }
+                        else {
+                            lines[lineIndex] = result;
+                        }
 
-
-            var lineIndex = methodResult.Value;
-            var result = GenerateKeyValue(key, value);
-
-            if (lineIndex < 0) {
-                lines.Add("");
-                lines.Add(result);
-            }
-            else {
-                lines[lineIndex] = result;
-            }
-
-            return MethodResult<List<string>>.Ok(lines);
-        }
+                        return MethodResult<List<string>>.Ok(lines);
+                    }));
 
         public static MethodResult<bool> IsFlag(string input) =>
             TryExtensions.Try(() => input.StartsWith('-') || input.StartsWith("--"))
                 .OnFail(() => MethodResult<bool>.Ok(false));
 
         private static MethodResult<int> FindLineIndex([Required] IReadOnlyCollection<string> lines,
-            [Required] string key) =>
-            Method.MethodParametersMustValid(new object?[] {lines, key})
-                .TryOnSuccess(() => {
-                    key = key.ToLower();
-                    var lineIndex = lines.TakeWhile(line => !line.ToLower().StartsWith($"{key} ")).Count();
-                    return lineIndex >= lines.Count ? -1 : lineIndex;
-                })
-                .OnFail(() => MethodResult<int>.Ok(-1));
+            string key, string separator, string commentSign) =>
+            TryExtensions.Try(() => {
+                key = key.ToLower();
+                var keyWithSeparator = $"{key}{separator}";
+
+                var selectedLines = lines.Where(line => line.ToLower().Contains(keyWithSeparator))
+                    .Select((line, index) => (line: RemoveExtraSpaces(line), index));
+
+                var commentSignWithSpace = $"{commentSign}{separator}";
+                var selectedLinesDetail = selectedLines.Select(selectedLine =>
+                    selectedLine.line.StartsWith(commentSign) || selectedLine.line.StartsWith(commentSignWithSpace)
+                        ? (selectedLine.line, selectedLine.index, isComment: true)
+                        : (selectedLine.line, selectedLine.index, isComment: false)).ToList();
+
+                switch (selectedLinesDetail.Count) {
+                    case 0:
+                        return MethodResult<int>.Ok(-1);
+                    case 1:
+                        return MethodResult<int>.Ok(selectedLinesDetail.First().index);
+                    default:
+                        var unCommentedResults =
+                            selectedLinesDetail.Where(selectedLineDetail => !selectedLineDetail.isComment).ToList();
+
+                        return unCommentedResults.Count switch {
+                            0 => MethodResult<int>.Ok(selectedLinesDetail.First(selectedLineDetail =>
+                                    selectedLineDetail.isComment)
+                                .index),
+                            1 => MethodResult<int>.Ok(unCommentedResults.First().index),
+                            _ => MethodResult<int>.Fail(new TooManyKeysFoundError(unCommentedResults.Select(item =>
+                                new KeyValuePair<string, string>($"line {item.index}", "Key detected!"))))
+                        };
+                }
+            });
 
         private static string GenerateKeyValue(string key, string value, string separator = " ") =>
             $"{key}{separator}{value}";
+
+        /// <summary>
+        /// Remove all extra spaces and tabs between words in the specified string!
+        /// </summary>
+        /// <param name="str">The specified string.</param>
+        /// TODD: Test
+        private static string RemoveExtraSpaces(string str) {
+            str = str.Trim();
+            StringBuilder sb = new StringBuilder();
+
+            var space = false;
+            foreach (var c in str) {
+                if (char.IsWhiteSpace(c) || c == (char) 9) {
+                    space = true;
+                }
+                else {
+                    if (space) {
+                        sb.Append(' ');
+                    }
+
+                    sb.Append(c);
+                    space = false;
+                }
+            }
+
+            return sb.ToString();
+        }
 
         public static string ScopesHelp(IEnumerable<Type> scopes) {
             var sb = new StringBuilder();
@@ -171,6 +218,7 @@ namespace servess {
         public static string GetLongParameterName(string pureName) => "--" + pureName;
         public static string GetShortParameterName(string pureName) => "-" + pureName;
         public static bool IsLongParameterName(string name) => name.StartsWith("--");
+
         public static MethodResult<string> GetNameFromFlag(string flag) =>
             TryExtensions.Try(() => flag.StartsWith("--")
                 ? flag.Remove(0, 2) // --name

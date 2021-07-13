@@ -19,6 +19,9 @@ namespace servess.Libs {
             [Input("count-max", "c",
                 "Client Alive Count Max", nameof(ClientAliveCountMax), isRequired: false)]
             public int? ClientAliveCountMax { get; set; }
+            
+            private const string Separator = " ";
+            private const string CommentSign = "#";
 
             [Operator]
             public MethodResult Operation() {
@@ -37,7 +40,7 @@ namespace servess.Libs {
 
                     if (ClientAliveInterval is not null) {
                         var intervalMethodResult = Utility.AddOrUpdateKeyValue(lines, clientAliveIntervalKey,
-                                ClientAliveInterval.ToString()!)
+                                ClientAliveInterval.ToString()!, " ", "#")
                             .OnSuccess(newLines => lines = newLines);
                         if (!intervalMethodResult.IsSuccess)
                             return MethodResult.Fail(intervalMethodResult.Detail);
@@ -45,7 +48,7 @@ namespace servess.Libs {
 
                     if (ClientAliveCountMax is not null) {
                         var countMaxMethodResult = Utility.AddOrUpdateKeyValue(lines, clientAliveCountMaxKey,
-                                ClientAliveCountMax.ToString()!)
+                                ClientAliveCountMax.ToString()!, Separator, CommentSign)
                             .OnSuccess(newLines => lines = newLines);
                         if (!countMaxMethodResult.IsSuccess)
                             return MethodResult.Fail(countMaxMethodResult.Detail);
