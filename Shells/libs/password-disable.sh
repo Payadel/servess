@@ -1,2 +1,2 @@
-servess sshd disable-password
+servess sshd password -d
 sudo systemctl reload ssh

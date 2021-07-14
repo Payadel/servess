@@ -96,17 +96,17 @@ fi
 printf "Allow user to access ssh? (y/n): "
 read allow_ssh
 
-allowUsers=$(servess sshd ssh-access -la | gawk -F ': ' '{ print $2 }')
-denyUsers=$(servess sshd ssh-access -ld | gawk -F ': ' '{ print $2 }')
+allowUsers=$(servess sshd ssh-access --list-allow-users | gawk -F ': ' '{ print $2 }')
+denyUsers=$(servess sshd ssh-access --list-deny-users | gawk -F ': ' '{ print $2 }')
 if [ "$allow_ssh" = "y" ] || [ "$allow_ssh" = "Y" ]; then
     if [ ! -z "$allowUsers" ]; then
         echo "Adding user to allow ssh access list..."
-        servess sshd ssh-access -aa "$username" -la
+        servess sshd ssh-access --add-allow-user "$username" --list-allow-users
     fi
 else
     if [ ! -z "$denyUsers" ] || [ -z "$allowUsers" ]; then
         echo "Adding user to deny ssh list..."
-        servess sshd ssh-access -ad "$username" -ld
+        servess sshd ssh-access --add-deny-user "$username" --list-deny-users
     fi
 fi
 delete_user_if_operation_failed "$?"
