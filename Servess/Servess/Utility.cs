@@ -82,7 +82,7 @@ namespace servess {
 
         public static MethodResult<List<string>> AddOrUpdateKeyValue([Required] List<string> lines,
             [Required] string key,
-            [Required] string value, string separator,
+            string value, string separator,
             [Required] string commentSign, int targetLineIndex) =>
             Method.MethodParametersMustValid(new object?[] {lines, key, value, separator, commentSign,targetLineIndex})
                 .TryOnSuccess(() => GenerateKeyValue(key, value)
@@ -250,13 +250,15 @@ namespace servess {
             return uniqueItems != list1.Count;
         }
 
-        public static string CombineList<T>(List<T> list, string separator) {
+        public static string CombineList<T>(IEnumerable<T> list, string separator) {
             var sb = new StringBuilder();
             foreach (var item in list) {
-                sb.Append(item).Append(' ');
+                sb.Append(item).Append(separator);
             }
 
-            sb.Remove(sb.Length - 1, 1);
+            if (sb.Length > 0) {
+                sb.Remove(sb.Length - 1, 1); 
+            }
             return sb.ToString();
         }
     }

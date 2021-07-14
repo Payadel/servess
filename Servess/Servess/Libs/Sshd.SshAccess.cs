@@ -149,36 +149,32 @@ namespace servess.Libs {
 
 
                 resultAllowUsers = resultAllowUsers.Distinct().ToList();
-                string? combinedAllowUsers = null;
-                if (resultAllowUsers.Count > 0) {
-                    combinedAllowUsers = Utility.CombineList(resultAllowUsers, " ");
+                var combinedAllowUsers = Utility.CombineList(resultAllowUsers, " ");
                     var methodResult = Utility.AddOrUpdateKeyValue(lines, allowUsersKey,
                         combinedAllowUsers, KeySeparator, CommentSign,
                         currentAllowUsersIndex).OnSuccess(newLines => lines = newLines);
                     if (!methodResult.IsSuccess) {
                         return MethodResult<string>.Fail(methodResult.Detail);
                     }
-                }
+
 
                 resultDenyUsers = resultDenyUsers.Distinct().ToList();
-                string? combinedDenyUsers = null;
-                if (resultDenyUsers.Count > 0) {
-                    combinedDenyUsers = Utility.CombineList(resultDenyUsers, " ");
-                    var methodResult = Utility.AddOrUpdateKeyValue(lines, denyUsersKey,
-                        combinedDenyUsers, KeySeparator, CommentSign,
-                        currentDenyUsersIndex).OnSuccess(newLines => lines = newLines);
-                    if (!methodResult.IsSuccess) {
-                        return MethodResult<string>.Fail(methodResult.Detail);
-                    }
+                var combinedDenyUsers = Utility.CombineList(resultDenyUsers, " ");
+                 methodResult = Utility.AddOrUpdateKeyValue(lines, denyUsersKey,
+                    combinedDenyUsers, KeySeparator, CommentSign,
+                    currentDenyUsersIndex).OnSuccess(newLines => lines = newLines);
+                if (!methodResult.IsSuccess) {
+                    return MethodResult<string>.Fail(methodResult.Detail);
                 }
 
 
                 fileStream.Close();
 
                 var operation = MethodResult.Ok();
-                if (AddAllowUser is not null || RemoveAllowUser is not null || AddDenyUser is not null || RemoveDenyUser is not null) {
+                if (AddAllowUser is not null || RemoveAllowUser is not null || AddDenyUser is not null ||
+                    RemoveDenyUser is not null) {
                     operation = TryExtensions.Try(() => File.WriteAllLines(path, lines))
-                        .OnSuccess(()=> Console.WriteLine("Done."));
+                        .OnSuccess(() => Console.WriteLine("Done."));
                 }
 
                 return operation.OnSuccess(() => {
