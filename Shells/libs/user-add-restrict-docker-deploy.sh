@@ -38,6 +38,7 @@ fi
 
 echo "Create restrict user that supports docker (username: $username)..."
 /opt/shell-libs/user-add-restrict-docker.sh "$username"
+exit_if_operation_failed "$?"
 
 #Set variables
 user_home_dir="/home/$username"

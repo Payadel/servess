@@ -28,7 +28,7 @@ else
     username=$1
 fi
 
-id "$username" &>/dev/null
+is_user_exist=$(id "$username" 2>/dev/null)
 if [ "$?" = "0" ]; then
     echo -e "$ERROR_COLORIZED: The user already exists." >&2
     exit 1
