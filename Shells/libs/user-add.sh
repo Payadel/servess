@@ -58,7 +58,7 @@ if [ ! -d "$home_dir" ]; then
     sudo mkdir -p "$home_dir"
 fi
 sudo chown "$username:$username" "$home_dir" && chmod 750 "$home_dir"
-exit_if_operation_failed "$?"
+delete_user_if_operation_failed "$?"
 
 #Sudo group?
 printf "Add user to sudo group? (y/n): "
@@ -109,7 +109,9 @@ else
         servess sshd ssh-access -ad "$username" -ld
     fi
 fi
+delete_user_if_operation_failed "$?"
 
 echo "Restarting ssh..."
 sudo systemctl restart ssh
+show_warning_if_operation_failed "$?"
 #=====================================================================

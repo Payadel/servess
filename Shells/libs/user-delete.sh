@@ -114,9 +114,11 @@ if [ ! -z "$denyUsers" ]; then
         servess sshd ssh-access -rd "$username" -ld
     fi
 fi
+show_warning_if_operation_failed "$?"
 
 echo "Restarting ssh..."
 sudo systemctl restart ssh
+show_warning_if_operation_failed "$?"
 #=======================================================================
 
 echo -e "$DONE_COLORIZED"
