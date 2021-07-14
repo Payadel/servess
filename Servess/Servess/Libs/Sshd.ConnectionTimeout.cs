@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using FunctionalUtility.Extensions;
 using FunctionalUtility.ResultDetails.Errors;
@@ -24,13 +25,13 @@ namespace servess.Libs {
             private const string CommentSign = "#";
 
             [Operator]
-            public MethodResult Operation() {
+            public MethodResult<string> Operation() {
                 const string clientAliveIntervalKey = "ClientAliveInterval";
                 const string clientAliveCountMaxKey = "ClientAliveCountMax";
                 var path = Path ?? ConfigFilePath;
 
                 if (!File.Exists(path)) {
-                    return MethodResult.Fail(new NotFoundError(title: "File Not Found", message: $"Can't find {path}"));
+                    return MethodResult<string>.Fail(new NotFoundError(title: "File Not Found", message: $"Can't find {path}"));
                 }
 
                 return TryExtensions.Try(() => {
@@ -38,26 +39,19 @@ namespace servess.Libs {
                     using var fileStream = new FileStream(path, FileMode.Open, FileAccess.ReadWrite,
                         FileShare.Read);
 
-                    if (ClientAliveInterval is not null) {
-                        var intervalMethodResult = Utility.AddOrUpdateKeyValue(lines, clientAliveIntervalKey,
-                                ClientAliveInterval.ToString()!, " ", "#")
-                            .OnSuccess(newLines => lines = newLines);
-                        if (!intervalMethodResult.IsSuccess)
-                            return MethodResult.Fail(intervalMethodResult.Detail);
-                    }
-
-                    if (ClientAliveCountMax is not null) {
-                        var countMaxMethodResult = Utility.AddOrUpdateKeyValue(lines, clientAliveCountMaxKey,
+                    MethodResult<List<string>>.Ok(null!)
+                        .OperateWhen(ClientAliveInterval is not null, () =>
+                            Utility.AddOrUpdateKeyValue(lines, clientAliveIntervalKey,
+                                    ClientAliveInterval.ToString()!, " ", "#")
+                                .OnSuccess(newLines => lines = newLines))
+                        .OnSuccessOperateWhen(ClientAliveCountMax is not null, () => Utility.AddOrUpdateKeyValue(lines,
+                                clientAliveCountMaxKey,
                                 ClientAliveCountMax.ToString()!, Separator, CommentSign)
-                            .OnSuccess(newLines => lines = newLines);
-                        if (!countMaxMethodResult.IsSuccess)
-                            return MethodResult.Fail(countMaxMethodResult.Detail);
-                    }
+                            .OnSuccess(newLines => lines = newLines));
 
                     fileStream.Close();
-
                     File.WriteAllLines(path, lines);
-                    return MethodResult.Ok();
+                    return MethodResult<string>.Ok("Done");
                 });
             }
         }

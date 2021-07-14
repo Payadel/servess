@@ -20,26 +20,27 @@ namespace servess.Libs {
             [Input("enable", "e",
                 "Enable password", nameof(EnablePassword), isRequired: false, hasValue: false)]
             public bool? EnablePassword { get; set; }
-            
+
             private const string Separator = " ";
             private const string CommentSign = "#";
 
             [Operator]
-            public MethodResult Operation() {
+            public MethodResult<string> Operation() {
                 switch (DisablePassword) {
                     case null when EnablePassword is null:
-                        Console.WriteLine("Error! at least one of the flags must set.");
-                        return MethodResult.Ok();
+                        return MethodResult<string>.Fail(
+                            new BadRequestError(message: "Error! at least one of the flags must set."));
                     case not null when EnablePassword is not null:
-                        Console.WriteLine("Error! Can't set both disable and enable flags.");
-                        return MethodResult.Ok();
+                        return MethodResult<string>.Fail(
+                            new BadRequestError(message: "Error! Can't set both disable and enable flags."));
                 }
 
                 const string permitRootLogin = "PermitRootLogin";
                 var path = Path ?? ConfigFilePath;
-                
+
                 if (!File.Exists(path)) {
-                    return MethodResult.Fail(new NotFoundError(title: "File Not Found", message: $"Can't find {path}"));
+                    return MethodResult<string>.Fail(new NotFoundError(title: "File Not Found",
+                        message: $"Can't find {path}"));
                 }
 
                 return TryExtensions.Try(() => {
@@ -48,11 +49,12 @@ namespace servess.Libs {
                         FileShare.Read);
 
                     var methodResult = Utility.AddOrUpdateKeyValue(lines, permitRootLogin,
-                        DisablePassword is not null ? "without-password" : "yes",Separator, CommentSign);
+                        DisablePassword is not null ? "without-password" : "yes", Separator, CommentSign);
 
                     fileStream.Close();
 
-                    return methodResult.OnSuccess(newLines => File.WriteAllLines(path, newLines));
+                    return methodResult.TryOnSuccess(newLines => File.WriteAllLines(path, newLines))
+                        .OnSuccess(() => MethodResult<string>.Ok("Done"));
                 });
             }
         }

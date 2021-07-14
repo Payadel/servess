@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using FunctionalUtility.Extensions;
+using FunctionalUtility.ResultDetails.Errors;
 using FunctionalUtility.ResultUtility;
 using ModelsValidation;
 using servess.Attributes;
@@ -75,16 +76,23 @@ namespace servess {
             [Required] string key,
             [Required] string value, string separator,
             [Required] string commentSign) =>
-            Method.MethodParametersMustValid(new object?[] {lines, key, value, separator ,commentSign})
-                .OnSuccess(() => FindLineIndex(lines, key, separator,commentSign))
-                .TryOnSuccess(lineIndex => GenerateKeyValue(key, value)
+            Method.MethodParametersMustValid(new object?[] {lines, key, value, separator, commentSign})
+                .OnSuccess(() => FindLineIndex(lines, key, separator, commentSign))
+                .OnSuccess(lineIndex => AddOrUpdateKeyValue(lines, key, value, separator, commentSign, lineIndex));
+
+        public static MethodResult<List<string>> AddOrUpdateKeyValue([Required] List<string> lines,
+            [Required] string key,
+            [Required] string value, string separator,
+            [Required] string commentSign, int targetLineIndex) =>
+            Method.MethodParametersMustValid(new object?[] {lines, key, value, separator, commentSign,targetLineIndex})
+                .TryOnSuccess(() => GenerateKeyValue(key, value)
                     .Map(result => {
-                        if (lineIndex < 0) {
+                        if (targetLineIndex < 0) {
                             lines.Add("");
                             lines.Add(result);
                         }
                         else {
-                            lines[lineIndex] = result;
+                            lines[targetLineIndex] = result;
                         }
 
                         return MethodResult<List<string>>.Ok(lines);
@@ -94,32 +102,32 @@ namespace servess {
             TryExtensions.Try(() => input.StartsWith('-') || input.StartsWith("--"))
                 .OnFail(() => MethodResult<bool>.Ok(false));
 
-        private static MethodResult<int> FindLineIndex([Required] IReadOnlyCollection<string> lines,
+        public static MethodResult<int> FindLineIndex([Required] IReadOnlyCollection<string> lines,
             string key, string separator, string commentSign) =>
             TryExtensions.Try(() => {
                 key = key.ToLower();
                 var keyWithSeparator = $"{key}{separator}";
-
-                var selectedLines = lines.Where(line => line.ToLower().Contains(keyWithSeparator))
-                    .Select((line, index) => (line: RemoveExtraSpaces(line), index));
-
+                
                 var commentSignWithSpace = $"{commentSign}{separator}";
-                var selectedLinesDetail = selectedLines.Select(selectedLine =>
-                    selectedLine.line.StartsWith(commentSign) || selectedLine.line.StartsWith(commentSignWithSpace)
-                        ? (selectedLine.line, selectedLine.index, isComment: true)
-                        : (selectedLine.line, selectedLine.index, isComment: false)).ToList();
+                var selectedLines = new List<(string line, int index, bool isComment)>();
+                for (var i = 0; i < lines.Count; i++) {
+                    if (!lines.ElementAt(i).ToLower().Contains(keyWithSeparator)) continue;
+                    var line = RemoveExtraSpaces(lines.ElementAt(i));
+                    var isComment = line.StartsWith(commentSign) || line.StartsWith(commentSignWithSpace);
+                    selectedLines.Add((line, i, isComment));
+                }
 
-                switch (selectedLinesDetail.Count) {
+                switch (selectedLines.Count) {
                     case 0:
                         return MethodResult<int>.Ok(-1);
                     case 1:
-                        return MethodResult<int>.Ok(selectedLinesDetail.First().index);
+                        return MethodResult<int>.Ok(selectedLines.First().index);
                     default:
                         var unCommentedResults =
-                            selectedLinesDetail.Where(selectedLineDetail => !selectedLineDetail.isComment).ToList();
+                            selectedLines.Where(selectedLineDetail => !selectedLineDetail.isComment).ToList();
 
                         return unCommentedResults.Count switch {
-                            0 => MethodResult<int>.Ok(selectedLinesDetail.First(selectedLineDetail =>
+                            0 => MethodResult<int>.Ok(selectedLines.First(selectedLineDetail =>
                                     selectedLineDetail.isComment)
                                 .index),
                             1 => MethodResult<int>.Ok(unCommentedResults.First().index),
@@ -128,6 +136,15 @@ namespace servess {
                         };
                 }
             });
+
+        public static MethodResult<string> GetValue(string input, string key, string separator) =>
+            MethodResult<string>.Ok("")
+                .OnSuccess(() => RemoveExtraSpaces(input).Split(separator))
+                .OnSuccessFailWhen(result => result.Length > 0
+                                             && !string.Equals(result.First(), key,
+                                                 StringComparison.CurrentCultureIgnoreCase),
+                    new BadRequestError(title: "Key Value Detection Error", message: $"Can't detect key in {input}"))
+                .OnSuccess(result => result.Length > 0 ? input.Remove(0, (key + separator).Length) : "");
 
         private static string GenerateKeyValue(string key, string value, string separator = " ") =>
             $"{key}{separator}{value}";
@@ -225,5 +242,22 @@ namespace servess {
                 : flag.Remove(0, 1)); // -name
 
         public static bool IsNullable(Type type) => Nullable.GetUnderlyingType(type) != null;
+
+        public static bool HaveDuplicateItems<T>(List<T>? list1, List<T>? list2) {
+            if (list1 is null || list2 is null) return false;
+
+            var uniqueItems = list1.Except(list2).Count();
+            return uniqueItems != list1.Count;
+        }
+
+        public static string CombineList<T>(List<T> list, string separator) {
+            var sb = new StringBuilder();
+            foreach (var item in list) {
+                sb.Append(item).Append(' ');
+            }
+
+            sb.Remove(sb.Length - 1, 1);
+            return sb.ToString();
+        }
     }
 }

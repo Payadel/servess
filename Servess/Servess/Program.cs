@@ -39,7 +39,6 @@ namespace servess {
                             case NotFoundError:
                             case BadRequestError:
                             default:
-                                //TODO: Check and complete
                                 Console.WriteLine(methodResult.Detail.Message);
                                 break;
                         }
