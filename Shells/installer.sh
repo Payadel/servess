@@ -121,5 +121,7 @@ run "install docker compose" /opt/shell-libs/docker-compose-install.sh
 # run "install Gitlab with docker compose" /opt/shell-libs/gitlab-install-dockerCompose.sh $editor
 # run "install Gitlab" /opt/shell-libs/gitlab-install.sh $editor
 
+run "Base Configs" /opt/shell-libs/baseConfig.sh
+
 #Backup
 run "Create Timeshift Backup" /opt/shell-libs/timeshift-createBackup.sh "Base apps is installed"
