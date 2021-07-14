@@ -175,15 +175,21 @@ namespace servess.Libs {
 
                 fileStream.Close();
 
-                return TryExtensions.Try(() => File.WriteAllLines(path, lines))
-                    .OnSuccess(() => {
-                        if (ListAllowUsers is not null)
-                            Console.WriteLine($"Allow Users: {combinedAllowUsers}");
+                var operation = MethodResult.Ok();
+                if (AddAllowUser is not null || RemoveAllowUser is not null || AddDenyUser is not null || RemoveDenyUser is not null) {
+                    operation = TryExtensions.Try(() => File.WriteAllLines(path, lines))
+                        .OnSuccess(()=> Console.WriteLine("Done."));
+                }
 
-                        if (ListDenyUsers is not null)
-                            Console.WriteLine($"Deny Users: {combinedDenyUsers}");
-                    })
-                    .OnSuccess(() => MethodResult<string>.Ok("Done"));
+                return operation.OnSuccess(() => {
+                    if (ListAllowUsers is not null)
+                        Console.WriteLine($"Allow Users: {combinedAllowUsers}");
+
+                    if (ListDenyUsers is not null)
+                        Console.WriteLine($"Deny Users: {combinedDenyUsers}");
+
+                    return MethodResult<string>.Ok(null!);
+                });
             }
         }
     }
