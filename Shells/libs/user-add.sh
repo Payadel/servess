@@ -96,8 +96,8 @@ fi
 printf "Allow user to access ssh? (y/n): "
 read allow_ssh
 
-allowUsers=$(servess sshd ssh-access -la | gawk -F: '{ print $2 }')
-denyUsers=$(servess sshd ssh-access -ld | gawk -F: '{ print $2 }')
+allowUsers=$(servess sshd ssh-access -la | gawk -F ': ' '{ print $2 }')
+denyUsers=$(servess sshd ssh-access -ld | gawk -F ': ' '{ print $2 }')
 if [ "$allow_ssh" = "y" ] || [ "$allow_ssh" = "Y" ]; then
     if [ ! -z "$allowUsers" ]; then
         echo "Adding user to allow ssh access list..."
@@ -109,4 +109,7 @@ else
         servess sshd ssh-access -ad "$username" -ld
     fi
 fi
+
+echo "Restarting ssh..."
+sudo systemctl restart ssh
 #=====================================================================
