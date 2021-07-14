@@ -88,7 +88,7 @@ home_dir="/home/$username"
 
 #Creates bin dir & Configs permission
 bin_dir="$home_dir/bin"
-echo "change_owner_root "$bin_dir""
+echo "change_owner_root $bin_dir"
 change_owner_root "$bin_dir" 755 "true"
 exit_if_operation_failed "$?"
 
@@ -109,22 +109,6 @@ bash_profile_file="$home_dir/.bash_profile"
 echo "change_owner_root "$bash_profile_file""
 change_owner_root "$bash_profile_file" 644 "false"
 exit_if_operation_failed "$?"
-echo "================================================================================"
-echo ""
-
-echo "Other permissions..."
-cache_dir="$home_dir/.cache"
-config_dir="$home_dir/.config"
-# docker_dir="$home_dir/.docker"
-local_dir="$home_dir/.local"
-
-sudo chown root:root "$config_dir" "$local_dir" && sudo chmod 755 "$cache_dir" "$config_dir" "$local_dir"
-exit_if_operation_failed "$?"
-
-sudo chown -R root:root "$cache_dir" && sudo chattr -R +i "$cache_dir"
-exit_if_operation_failed "$?"
-
-sudo chattr +i "$config_dir" "$local_dir"
 echo "================================================================================"
 echo ""
 
