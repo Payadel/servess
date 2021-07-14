@@ -95,4 +95,25 @@ else
 fi
 exit_if_operation_failed "$?"
 
+#Access ssh
+allowUsers=$(servess sshd ssh-access -la | gawk -F: '{ print $2 }')
+echo "Config ssh access..."
+if [ ! -z "$allowUsers" ]; then
+    is_exist=$(servess sshd ssh-access -la | grep -E "^${username}$")
+    if [ ! -z "$is_exist" ]; then
+        echo "Removing user from allow ssh access list..."
+        servess sshd ssh-access -ra "$username" -la
+    fi
+fi
+
+denyUsers=$(servess sshd ssh-access -ld | gawk -F: '{ print $2 }')
+if [ ! -z "$denyUsers" ]; then
+    is_exist=$(servess sshd ssh-access -ld | grep -E "^${username}$")
+    if [ ! -z "$is_exist" ]; then
+        echo "Removing user from deny ssh access list..."
+        servess sshd ssh-access -rd "$username" -ld
+    fi
+fi
+#=======================================================================
+
 echo -e "$DONE_COLORIZED"
