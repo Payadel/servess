@@ -51,7 +51,7 @@ fi
 user_sessions=$(pgrep -u $username)
 if [ ! -z "$user_sessions" ]; then
     echo ""
-    printf "The user still loggin. do you want log out user? (y/n): "
+    printf "The user still login. do you want log out user? (y/n): "
     read logOut_user
     if [ "$logOut_user" = "y" ] || [ "$logOut_user" = "Y" ]; then
         sudo killall -9 -u "$username"
@@ -89,7 +89,8 @@ fi
 printf "do you wand delete user home dir? (y/n): "
 read delete_user_homeDir
 if [ "$delete_user_homeDir" = "y" ] || [ "$delete_user_homeDir" = "Y" ]; then
-    sudo chattr -R -i "$homeDir" && sudo userdel -r -f "$username"
+    sudo chattr -R -i "$homeDir"
+    sudo userdel -r -f "$username"
 else
     sudo userdel -f "$username"
 fi
