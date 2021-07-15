@@ -89,7 +89,7 @@ fi
 printf "do you wand delete user home dir? (y/n): "
 read delete_user_homeDir
 if [ "$delete_user_homeDir" = "y" ] || [ "$delete_user_homeDir" = "Y" ]; then
-    sudo chattr -R -i "$homeDir"
+    temp=$(sudo chattr -R -i "$homeDir" 2>/dev/null)
     sudo userdel -r -f "$username"
 else
     sudo userdel -f "$username"
