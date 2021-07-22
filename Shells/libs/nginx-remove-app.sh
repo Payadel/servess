@@ -121,20 +121,20 @@ delete "error log" "$error_log" "f"
 show_warning_if_operation_failed "$?"
 
 if [ -f "$sites_enabled_dir/$target_fileName" ]; then
-    echo "Removing $sites_enabled_dir/$target_fileName..."
+    echo_info "Removing $sites_enabled_dir/$target_fileName..."
     sudo rm "$sites_enabled_dir/$target_fileName"
 
     show_warning_if_operation_failed "$?"
 fi
 
 if [ -f "$sites_available_dir/$target_fileName" ]; then
-    echo "Removing $sites_available_dir/$target_fileName..."
+    echo_info "Removing $sites_available_dir/$target_fileName..."
     sudo rm "$sites_available_dir/$target_fileName"
 
     show_warning_if_operation_failed "$?"
 fi
 
-echo "Restarting nginx service..."
+echo_info "Restarting nginx service..."
 sudo systemctl restart nginx
 show_warning_if_operation_failed "$?"
 

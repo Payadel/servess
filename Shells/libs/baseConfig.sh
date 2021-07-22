@@ -8,7 +8,7 @@ fi
 . /opt/shell-libs/utility.sh
 
 if [ -f "/etc/update-motd.d/10-help-text" ]; then
-    echo "Disabling help-text in welcome message..."
+    echo_info "Disabling help-text in welcome message..."
     chmod -x "/etc/update-motd.d/10-help-text"
     show_warning_if_operation_failed "$?"
     echo ""
@@ -23,7 +23,7 @@ if [ "$add_root_to_allow_ssh" = "y" ] || [ "$add_root_to_allow_ssh" = "Y" ]; the
 fi
 
 if [ -f "/opt/shell-libs/welcome.sh" ]; then
-    echo "Adding welcome alias to .bashrc for root user..."
+    echo_info "Adding welcome alias to .bashrc for root user..."
     if [ ! -f "/root/.bashrc" ]; then
         touch "/root/.bashrc"
     fi

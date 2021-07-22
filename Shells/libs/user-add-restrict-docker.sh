@@ -56,7 +56,7 @@ if [ ! -f "/opt/shell-libs/user-add.sh" ]; then
     exit 1
 fi
 #================================================================================
-echo "Prepairing..."
+echo_info "Prepairing..."
 sudo apt install uidmap && sudo systemctl disable --now docker.service docker.socket && sudo apt-get install -y docker-ce-rootless-extras
 
 echo -e "${INFO_COLORIZED}: Adding user ($username)..."
@@ -65,7 +65,7 @@ exit_if_operation_failed "$?"
 echo "================================================================================"
 echo ""
 
-echo "Get server ip..."
+echo_info "Get server ip..."
 server_ip="$(dig +short myip.opendns.com @resolver1.opendns.com)"
 
 echo "ssh -t "$username@$server_ip""
@@ -74,11 +74,11 @@ exit_if_operation_failed "$?"
 echo "================================================================================"
 echo ""
 
-echo "enable-linger..."
+echo_info "enable-linger..."
 sudo loginctl enable-linger "$username"
 exit_if_operation_failed "$?"
 
-echo "Change bash to rbash..."
+echo_info "Change bash to rbash..."
 sudo usermod --shell /bin/rbash "$username"
 exit_if_operation_failed "$?"
 echo "================================================================================"
@@ -112,7 +112,7 @@ exit_if_operation_failed "$?"
 echo "================================================================================"
 echo ""
 
-echo "Adds commands for user"
+echo_info "Adds commands for user"
 sudo chattr -i "$bin_dir"
 sudo ln -s /bin/docker "$bin_dir" && sudo ln -s /usr/local/bin/docker-compose "$bin_dir" && sudo ln -s /bin/scp "$bin_dir" && sudo ln -s /bin/rm "$bin_dir" && sudo ln -s /bin/mkdir "$bin_dir" && sudo ln -s /bin/tar "$bin_dir"
 exit_if_operation_failed "$?"
@@ -122,7 +122,7 @@ sudo chattr +i "$bin_dir"
 echo "================================================================================"
 echo ""
 
-echo "Adds contents"
+echo_info "Adding contents..."
 chattr -i "$profile_file" "$bash_profile_file" "$bashrc_file"
 
 echo "$(grep ^$username /etc/group)"

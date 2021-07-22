@@ -100,18 +100,19 @@ allowUsers=$(servess sshd ssh-access --list-allow-users | gawk -F ': ' '{ print 
 denyUsers=$(servess sshd ssh-access --list-deny-users | gawk -F ': ' '{ print $2 }')
 if [ "$allow_ssh" = "y" ] || [ "$allow_ssh" = "Y" ]; then
     if [ ! -z "$allowUsers" ]; then
-        echo "Adding user to allow ssh access list..."
+        echo_info "Adding user to allow ssh access list..."
         servess sshd ssh-access --add-allow-user "$username" --list-allow-users
     fi
 else
     if [ ! -z "$denyUsers" ] || [ -z "$allowUsers" ]; then
-        echo "Adding user to deny ssh list..."
+        echo_info "Adding user to deny ssh list..."
         servess sshd ssh-access --add-deny-user "$username" --list-deny-users
     fi
 fi
 delete_user_if_operation_failed "$?"
+echo ""
 
-echo "Restarting ssh..."
+echo_info "Restarting ssh..."
 sudo systemctl restart ssh
 show_warning_if_operation_failed "$?"
 #=====================================================================

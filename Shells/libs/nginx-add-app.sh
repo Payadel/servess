@@ -174,17 +174,17 @@ server {
 " >>"$configFile_path"
 
 if [ $? == 0 ]; then
-    echo "Create file $configFile_path successfull."
+    echo_info "Create file $configFile_path successfull."
 else
     echo -e "$ERROR_COLORIZED: Operation failed." >&2
     exit $?
 fi
 
 configFile_ln_path="$nginx_dir/sites-enabled/$server_name"
-echo "Create ln in $configFile_ln_path..."
+echo_info "Create ln in $configFile_ln_path..."
 
 if [ -f "$configFile_ln_path" ]; then
-    echo "Remove old file..."
+    echo_info "Remove old file..."
     sudo rm "$configFile_ln_path"
 fi
 
@@ -206,7 +206,7 @@ if [ $? != 0 ]; then
     exit $?
 fi
 
-echo "Restart nginx service..."
+echo_info "Restart nginx service..."
 sudo systemctl restart nginx
 
 exit_if_operation_failed "$?" "$ERROR_COLORIZED: Error in config file!"

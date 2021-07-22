@@ -20,11 +20,11 @@ printf "Gitlab image path or press enter (empty) for download image: "
 read gitlab_image_path
 
 if [ -z $gitlab_image_path ]; then
-    echo "Pulling gilab image..."
+    echo_info "Pulling gilab image..."
     docker pull gitlab/gitlab-ce
 else
     if [ -f "$gitlab_image_path" ]; then
-        echo "Importing gilab image..."
+        echo_info "Importing gilab image..."
         cat $gitlab_image_path | docker import - gitlab/gitlab-ce
     else
         echo -e "$ERROR_COLORIZED: Can not find any file." >&2
@@ -88,7 +88,7 @@ exit_if_operation_failed "$?"
 cd $compose_dir && $editor $docker_filename
 #========================================================================
 #Run gitlab compose file
-echo "Run gitlab compose file..."
+echo_info "Run gitlab compose file..."
 
 cd $compose_dir && docker-compose up -d
 

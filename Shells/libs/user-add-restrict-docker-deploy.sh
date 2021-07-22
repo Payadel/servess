@@ -36,7 +36,7 @@ fi
 
 #=============================================================
 
-echo "Create restrict user that supports docker (username: $username)..."
+echo_info "Create restrict user that supports docker (username: $username)..."
 /opt/shell-libs/user-add-restrict-docker.sh "$username"
 exit_if_operation_failed "$?"
 
@@ -46,13 +46,13 @@ user_bin_dir="$user_home_dir/bin"
 echo "============================================================="
 echo ""
 
-echo "Copy deploy shell to user bin ($user_bin_dir)..."
+echo_info "Copy deploy shell to user bin ($user_bin_dir)..."
 sudo chattr -i "$user_bin_dir" && sudo chmod -R 755 "$deploy_shells_directory" && sudo cp $deploy_shells_directory/* "$user_bin_dir/" && sudo chattr +i "$user_bin_dir"
 
 exit_if_operation_failed "$?"
 echo "============================================================="
 echo ""
 
-echo "Create volume in $volume_dir..."
+echo_info "Create volume in $volume_dir..."
 sudo mkdir -p "$volume_dir" && sudo chown "$username:$username" "$volume_dir" && sudo chmod 750 "$volume_dir"
 exit_if_operation_failed "$?"

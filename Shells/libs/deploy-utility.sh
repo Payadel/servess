@@ -61,7 +61,7 @@ getUpdatedProject() {
 
     if [ -d "$path_main" ]; then
 
-        echo "Updating project with pull..."
+        echo_info "Updating project with pull..."
         pull_result=$(cd "$path_main/$work_dir" && sudo git pull origin)
 
         if [ $? == 0 ]; then
@@ -78,8 +78,8 @@ getUpdatedProject() {
 
             printf "Done.\n\n"
         else
-            echo "Pull request failed."
-            echo "Try update project with clone..."
+            echo_info "Pull request failed."
+            echo_info "Try update project with clone..."
 
             cloneProject "$path_temp" "$username" "$password" "$branch" "$github_sub_url"
             exit_if_operation_failed "$?"
@@ -87,7 +87,7 @@ getUpdatedProject() {
         printf "Done.\n\n"
 
     else
-        echo "Update project with clone..."
+        echo_info "Update project with clone..."
         cloneProject "$path_temp" "$username" "$password" "$branch" "$github_sub_url"
         exit_if_operation_failed "$?"
 
