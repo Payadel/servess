@@ -9,7 +9,7 @@ run() {
     process_name=$1
     execute_path=$2
 
-    printf "Processing $process_name...\n"
+    echo_info "Processing $process_name..."
     echo "Processing $process_name..." >>$statusFile
 
     sudo chmod +x $execute_path
@@ -64,6 +64,9 @@ chmod 750 /timeshift
 
 #Update
 run "update" /opt/shell-libs/update.sh
+
+#Firewall
+run "Firewall" /opt/shell-libs/firewall-config.sh
 
 #Git:
 #run "Git" /opt/shell-libs/git-install.sh
