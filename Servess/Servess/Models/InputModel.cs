@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace servess.Models {
+namespace Servess.Models {
     public class InputModel {
         public string CliName { get; set; }
         public string ParameterName { get; set; }

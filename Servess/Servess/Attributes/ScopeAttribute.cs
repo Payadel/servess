@@ -1,4 +1,4 @@
-﻿namespace servess.Attributes {
+﻿namespace Servess.Attributes {
     [System.AttributeUsage(System.AttributeTargets.Class)]
     public class ScopeAttribute : System.Attribute {
         public string Name { get; }

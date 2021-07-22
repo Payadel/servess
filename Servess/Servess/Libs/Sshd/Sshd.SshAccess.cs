@@ -5,9 +5,9 @@ using System.Linq;
 using FunctionalUtility.Extensions;
 using FunctionalUtility.ResultDetails.Errors;
 using FunctionalUtility.ResultUtility;
-using servess.Attributes;
+using Servess.Attributes;
 
-namespace servess.Libs {
+namespace Servess.Libs.Sshd {
     public static partial class Sshd {
         [Command("ssh-access", "Limit Users ssh access")]
         public class SshAccess {
@@ -150,17 +150,17 @@ namespace servess.Libs {
 
                 resultAllowUsers = resultAllowUsers.Distinct().ToList();
                 var combinedAllowUsers = Utility.CombineList(resultAllowUsers, " ");
-                    var methodResult = Utility.AddOrUpdateKeyValue(lines, allowUsersKey,
-                        combinedAllowUsers, KeySeparator, CommentSign,
-                        currentAllowUsersIndex).OnSuccess(newLines => lines = newLines);
-                    if (!methodResult.IsSuccess) {
-                        return MethodResult<string>.Fail(methodResult.Detail);
-                    }
+                var methodResult = Utility.AddOrUpdateKeyValue(lines, allowUsersKey,
+                    combinedAllowUsers, KeySeparator, CommentSign,
+                    currentAllowUsersIndex).OnSuccess(newLines => lines = newLines);
+                if (!methodResult.IsSuccess) {
+                    return MethodResult<string>.Fail(methodResult.Detail);
+                }
 
 
                 resultDenyUsers = resultDenyUsers.Distinct().ToList();
                 var combinedDenyUsers = Utility.CombineList(resultDenyUsers, " ");
-                 methodResult = Utility.AddOrUpdateKeyValue(lines, denyUsersKey,
+                methodResult = Utility.AddOrUpdateKeyValue(lines, denyUsersKey,
                     combinedDenyUsers, KeySeparator, CommentSign,
                     currentDenyUsersIndex).OnSuccess(newLines => lines = newLines);
                 if (!methodResult.IsSuccess) {

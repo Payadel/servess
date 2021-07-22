@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using ModelsValidation.ResultDetails;
 
-namespace servess.MethodErrors {
+namespace Servess.MethodErrors {
     public class TypeMissMachError : ArgumentValidationError {
         public TypeMissMachError(KeyValuePair<string, string> modelError, string? title = "Type Mismatch",
             string? message = null, Exception? exception = null, bool showDefaultMessageToUser = true,

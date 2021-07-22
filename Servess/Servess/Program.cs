@@ -6,12 +6,12 @@ using FunctionalUtility.Extensions;
 using FunctionalUtility.ResultDetails.Errors;
 using FunctionalUtility.ResultUtility;
 using ModelsValidation.ResultDetails;
-using servess.Attributes;
-using servess.Models;
+using Servess.Attributes;
+using Servess.Models;
 
 //TODO: Reorder methods
 
-namespace servess {
+namespace Servess {
     public static class Program {
         public static void Main(string[] args) {
             try {

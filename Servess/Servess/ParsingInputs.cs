@@ -6,12 +6,12 @@ using FunctionalUtility.Extensions;
 using FunctionalUtility.ResultDetails.Errors;
 using FunctionalUtility.ResultUtility;
 using ModelsValidation.ResultDetails;
-using servess.MethodErrors;
-using servess.Models;
+using Servess.MethodErrors;
+using Servess.Models;
 
 //TODO: Check inputs
 
-namespace servess {
+namespace Servess {
     public static class ParsingInputs {
         public static MethodResult<List<InputModel>> Parse(List<string> args, List<InputSchemeModel> inputSchemes) =>
             ParseInputs(args)

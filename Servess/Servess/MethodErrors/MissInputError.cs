@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using ModelsValidation.ResultDetails;
 
-namespace servess.MethodErrors {
+namespace Servess.MethodErrors {
     public class MissInputError : ArgumentValidationError {
         public MissInputError(KeyValuePair<string, string> modelError, string? title = "Missing input",
             string? message = null,

@@ -1,4 +1,4 @@
-﻿namespace servess.Attributes {
+﻿namespace Servess.Attributes {
     [System.AttributeUsage(System.AttributeTargets.Property)]
     public class InputAttribute : System.Attribute {
         public string CliName { get; }

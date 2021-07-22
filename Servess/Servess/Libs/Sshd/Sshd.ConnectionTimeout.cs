@@ -4,11 +4,11 @@ using System.Linq;
 using FunctionalUtility.Extensions;
 using FunctionalUtility.ResultDetails.Errors;
 using FunctionalUtility.ResultUtility;
-using servess.Attributes;
+using Servess.Attributes;
 
 //TODO: Show values
 
-namespace servess.Libs {
+namespace Servess.Libs.Sshd {
     public static partial class Sshd {
         [Command("connection-timeout", "SSH connection timeout")]
         public class ConnectionTimeoutClass {
@@ -22,7 +22,7 @@ namespace servess.Libs {
             [Input("count-max", "c",
                 "Client Alive Count Max", nameof(ClientAliveCountMax), isRequired: false)]
             public int? ClientAliveCountMax { get; set; }
-            
+
             private const string Separator = " ";
             private const string CommentSign = "#";
 
@@ -33,7 +33,8 @@ namespace servess.Libs {
                 var path = Path ?? ConfigFilePath;
 
                 if (!File.Exists(path)) {
-                    return MethodResult<string>.Fail(new NotFoundError(title: "File Not Found", message: $"Can't find {path}"));
+                    return MethodResult<string>.Fail(new NotFoundError(title: "File Not Found",
+                        message: $"Can't find {path}"));
                 }
 
                 return TryExtensions.Try(() => {

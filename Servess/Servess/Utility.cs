@@ -8,13 +8,13 @@ using FunctionalUtility.Extensions;
 using FunctionalUtility.ResultDetails.Errors;
 using FunctionalUtility.ResultUtility;
 using ModelsValidation;
-using servess.Attributes;
-using servess.MethodErrors;
-using servess.Models;
+using Servess.Attributes;
+using Servess.MethodErrors;
+using Servess.Models;
 
 //TODO: Separate?
 
-namespace servess {
+namespace Servess {
     public static class Utility {
         public static bool IsHelpFlag(string option) {
             if (string.IsNullOrEmpty(option))
@@ -84,8 +84,8 @@ namespace servess {
             [Required] string key,
             string value, string separator,
             [Required] string commentSign, int targetLineIndex) =>
-            Method.MethodParametersMustValid(new object?[] {lines, key, value, separator, commentSign,targetLineIndex})
-                .TryOnSuccess(() => GenerateKeyValue(key, value)
+            Method.MethodParametersMustValid(new object?[] {lines, key, value, separator, commentSign, targetLineIndex})
+                .TryOnSuccess(() => GenerateKeyValue(key, value, separator)
                     .Map(result => {
                         if (targetLineIndex < 0) {
                             lines.Add("");
@@ -107,7 +107,7 @@ namespace servess {
             TryExtensions.Try(() => {
                 key = key.ToLower();
                 var keyWithSeparator = $"{key}{separator}";
-                
+
                 var commentSignWithSpace = $"{commentSign}{separator}";
                 var selectedLines = new List<(string line, int index, bool isComment)>();
                 for (var i = 0; i < lines.Count; i++) {
@@ -257,8 +257,9 @@ namespace servess {
             }
 
             if (sb.Length > 0) {
-                sb.Remove(sb.Length - 1, 1); 
+                sb.Remove(sb.Length - 1, 1);
             }
+
             return sb.ToString();
         }
     }

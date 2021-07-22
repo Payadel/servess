@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Reflection;
-using servess.Attributes;
+using Servess.Attributes;
 
-namespace servess.Models {
+namespace Servess.Models {
     public class InputSchemeModel {
         public PropertyInfo PropertyInfo { get; }
         public InputAttribute InputAttribute { get; }

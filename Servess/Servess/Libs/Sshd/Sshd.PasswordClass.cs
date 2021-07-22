@@ -1,12 +1,11 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using FunctionalUtility.Extensions;
 using FunctionalUtility.ResultDetails.Errors;
 using FunctionalUtility.ResultUtility;
-using servess.Attributes;
+using Servess.Attributes;
 
-namespace servess.Libs {
+namespace Servess.Libs.Sshd {
     public static partial class Sshd {
         [Command("password", "disable/enable login with password")]
         public class PasswordClass {
