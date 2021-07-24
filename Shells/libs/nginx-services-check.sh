@@ -11,7 +11,7 @@ validate_proxy_pass() {
     local proxy_pass=$1
     local fileName=$2
 
-    curl_result=$(curl -s -I "$proxy_pass")
+    curl_result=$(curl -s -I --insecure "$proxy_pass")
     if [ -z "$curl_result" ]; then
         echo -e "$fileName: $ERROR_COLORIZED - We have trouble with $proxy_pass"
     else
