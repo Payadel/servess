@@ -47,36 +47,7 @@ there_must_be_a_site() {
     fi
 }
 
-if [ -z "$1" ] || [ -z "$2" ]; then
-    #One or all inputs empty
-    if [ ! -z "$1" ]; then
-        #Too few arguments
-        echo -e "$ERROR_COLORIZED: Too few arguments." >&2
-        exit 1
-    else
-        #Get arguments from terminal
-        nginx_dir="/etc/nginx"
-        printf "Nginx directory (default: $nginx_dir): "
-        read input
-        if [ ! -z $input ]; then
-            nginx_dir="$input"
-        fi
-
-        sites_available_dir="$nginx_dir/sites-available"
-        sites_enabled_dir="$nginx_dir/sites-enabled"
-
-        #is there any site?
-        there_must_be_a_site "$sites_available_dir" "$sites_enabled_dir"
-
-        echo ""
-        echo -e "${BOLD_GREEN}Enabled sites: ${ENDCOLOR}"
-        ls -lh "$sites_enabled_dir"
-        echo ""
-
-        printf "Input site(file) name: "
-        read target_fileName
-    fi
-else
+if [ "$#" -eq 2 ]; then
     #Get agruments from command line
     nginx_dir="$1"
     sites_available_dir="$nginx_dir/sites-available"
@@ -86,6 +57,34 @@ else
     there_must_be_a_site "$sites_available_dir" "$sites_enabled_dir"
 
     target_fileName="$2"
+else
+    if [ "$#" != 0 ]; then
+        #Or all or none
+        echo -e "$ERROR_COLORIZED: Mismatch inputs." >&2
+        exit 1
+    fi
+
+    #Get arguments from terminal
+    nginx_dir="/etc/nginx"
+    printf "Nginx directory (default: $nginx_dir): "
+    read input
+    if [ ! -z $input ]; then
+        nginx_dir="$input"
+    fi
+
+    sites_available_dir="$nginx_dir/sites-available"
+    sites_enabled_dir="$nginx_dir/sites-enabled"
+
+    #is there any site?
+    there_must_be_a_site "$sites_available_dir" "$sites_enabled_dir"
+
+    echo ""
+    echo -e "${BOLD_GREEN}Enabled sites: ${ENDCOLOR}"
+    ls -lh "$sites_enabled_dir"
+    echo ""
+
+    printf "Input site(file) name: "
+    read target_fileName
 fi
 
 if [ -f "$sites_enabled_dir/$target_fileName" ]; then

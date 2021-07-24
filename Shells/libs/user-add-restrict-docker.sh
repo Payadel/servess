@@ -8,7 +8,7 @@ fi
 . /opt/shell-libs/utility.sh
 
 change_owner_root() {
-    if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
+    if [ "$#" != 3 ]; then
         echo -e "${BOLD_Red}Inner Error${ENDCOLOR}: Too few inputs." >&2
         return 1
     fi
