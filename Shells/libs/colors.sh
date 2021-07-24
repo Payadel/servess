@@ -95,3 +95,7 @@ INFO_COLORIZED="${BOLD_BLUE}Info${ENDCOLOR}"
 echo_info() {
     echo -e "${INFO_COLORIZED}: $1"
 }
+
+echo_warning() {
+    echo -e "${WARNING_COLORIZED}: $1"
+}

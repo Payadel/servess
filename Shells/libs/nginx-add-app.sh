@@ -48,20 +48,83 @@ rollback_operations() {
     fi
 }
 
-#Get inputs:
-if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ] || [ -z "$5" ] || [ -z "$6" ]; then
-    if [ ! -z "$1" ]; then
-        #Or all or none
-        echo -e "$ERROR_COLORIZED: Too few inputs." >&2
-        exit 1
+echo_keyValue_data() {
+    local key=$1
+    local value=$2
+
+    if [ -z "$value" ]; then
+        echo -e "$key: ${BOLD_YELLOW}Empty${ENDCOLOR}"
     else
-        printf "SSL fullchain path (like: fullchain.pem): "
-        read ssl_fullchain_path
+        echo "$key: $value"
+    fi
+
+}
+
+#Get inputs:
+if [ "$#" -eq 4 ]; then # 2 arguments of 6 arguments is optional.
+    server_name=$1
+    log_dir=$2
+
+    proxy_pass=$3
+
+    proxy_must_valid "$proxy_pass"
+    is_https=$(echo "$proxy_pass" | grep "^https://")
+    if [ -z "$is_https" ]; then
+        #User uses http while ssl isn't set.
+        echo_warning "You don't use ssl config."
+    fi
+
+    nginx_dir=$4
+    fileOrDir_must_exist "$nginx_dir" "d"
+else
+    if [ "$#" -eq 6 ]; then
+        #Inputs are complete
+        server_name=$1
+        log_dir=$2
+
+        proxy_pass=$3
+
+        proxy_must_valid "$proxy_pass"
+        is_https=$(echo "$proxy_pass" | grep "^https://")
+        if [ ! -z "$is_https" ]; then
+            #User uses https while ssl config is set.
+            echo_warning "You are using ssl config but your proxy pass is https!"
+        fi
+
+        nginx_dir=$4
+        fileOrDir_must_exist "$nginx_dir" "d"
+
+        ssl_fullchain_path=$5
         fileOrDir_must_exist "$ssl_fullchain_path" "f"
 
-        printf "SSL private key path (like: privkey.pem): "
-        read ssl_privateKey_path
+        ssl_privateKey_path=$6
         fileOrDir_must_exist "$ssl_privateKey_path" "f"
+    else
+        if [ "$#" != 0 ]; then
+            #Or all or none
+            echo -e "$ERROR_COLORIZED: Mismatch inputs." >&2
+            exit 1
+        fi
+
+        printf "App url(proxy pass) (like: http://localhost:3000): "
+        read proxy_pass
+        proxy_must_valid "$proxy_pass"
+
+        is_https=$(echo "$proxy_pass" | grep "^https://")
+        if [ -z "$is_https" ]; then
+            #User uses http and may want config ssl.
+            printf "Need ssl config? (y/n): "
+            read need_ssl
+            if [ "$need_ssl" = "y" ] || [ "$need_ssl" = "Y" ]; then
+                printf "SSL fullchain path (like: fullchain.pem): "
+                read ssl_fullchain_path
+                fileOrDir_must_exist "$ssl_fullchain_path" "f"
+
+                printf "SSL private key path (like: privkey.pem): "
+                read ssl_privateKey_path
+                fileOrDir_must_exist "$ssl_privateKey_path" "f"
+            fi
+        fi
 
         printf "App domain (like: example.com): "
         read server_name
@@ -72,10 +135,6 @@ if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ] || [ -z "$5" ] || [ 
             log_dir="/var/log/nginx"
         fi
 
-        printf "App url(proxy pass) (like: http://localhost:3000): "
-        read proxy_pass
-        proxy_must_valid "$proxy_pass"
-
         printf "Nginx directory (default: /etc/nginx): "
         read nginx_dir
         if [ -z $nginx_dir ]; then
@@ -83,39 +142,23 @@ if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ] || [ -z "$5" ] || [ 
         fi
         fileOrDir_must_exist "$nginx_dir" "d"
     fi
-else
-    #Inputs are complete
-    ssl_fullchain_path=$1
-    fileOrDir_must_exist "$ssl_fullchain_path" "f"
-
-    ssl_privateKey_path=$2
-    fileOrDir_must_exist "$ssl_privateKey_path" "f"
-
-    server_name=$3
-    log_dir=$4
-
-    proxy_pass=$5
-    proxy_must_valid "$proxy_pass"
-
-    nginx_dir=$6
-    fileOrDir_must_exist "$nginx_dir" "d"
 fi
 #=======================================================================================
 echo ""
 
 #Validations
-echo "ssl_fullchain_path: $ssl_fullchain_path"
-echo "ssl_privateKey_path: $ssl_privateKey_path"
-echo "server_name: $server_name"
-echo "log_dir: $log_dir"
-echo "proxy_pass: $proxy_pass"
-echo "nginx_dir: $nginx_dir"
+echo_keyValue_data "ssl_fullchain_path" "$ssl_fullchain_path"
+echo_keyValue_data "ssl_privateKey_path" "$ssl_privateKey_path"
+echo_keyValue_data "server_name" "$server_name"
+echo_keyValue_data "log_dir" "$log_dir"
+echo_keyValue_data "proxy_pass" "$proxy_pass"
+echo_keyValue_data "nginx_dir" "$nginx_dir"
 
 printf "Is data valid? (y/n): "
 read isDataValid
 
 if [ "$isDataValid" != "y" ] && [ "$isDataValid" != "Y" ]; then
-    echo -e "${YELLOW}Operation canceled.${ENDCOLOR}"
+    echo_warning "Operation canceled."
     exit 0
 fi
 echo ""
@@ -137,17 +180,23 @@ fi
 #==============================================================================
 #Start...
 
-sudo echo "server {
+configFile_data="server {
     listen 443 ssl;
-    listen [::]:443 ssl;
+    listen [::]:443 ssl;"
+
+if [ ! -z "$ssl_fullchain_path" ]; then
+    configFile_data="$configFile_data
     ssl_certificate $ssl_fullchain_path;
-    ssl_certificate_key $ssl_privateKey_path;
+    ssl_certificate_key $ssl_privateKey_path;"
+fi
 
-   server_name $server_name;
+configFile_data="$configFile_data
 
-   access_log "$log_dir/$server_name.access.log";
-   error_log "$log_dir/$server_name.error.log";
-   
+    server_name $server_name;
+
+    access_log "$log_dir/$server_name.access.log";
+    error_log "$log_dir/$server_name.error.log";
+    
     location / {
         proxy_pass $proxy_pass;
         proxy_http_version 1.1;
@@ -171,7 +220,9 @@ server {
 
     return 404; # managed by Certbot
 }
-" >>"$configFile_path"
+"
+
+sudo echo "$configFile_data" >>"$configFile_path"
 
 if [ $? == 0 ]; then
     echo_info "Create file $configFile_path successfull."
