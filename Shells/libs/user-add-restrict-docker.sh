@@ -57,8 +57,9 @@ if [ ! -f "/opt/shell-libs/user-add.sh" ]; then
 fi
 #================================================================================
 echo_info "Prepairing..."
-sudo apt install uidmap && sudo systemctl disable --now docker.service docker.socket && sudo apt-get install -y docker-ce-rootless-extras
+sudo apt install uidmap && sudo apt-get install -y docker-ce-rootless-extras
 exit_if_operation_failed "$?"
+sudo systemctl disable --now docker.service docker.socket
 
 echo -e "${INFO_COLORIZED}: Adding user ($username)..."
 sudo /opt/shell-libs/user-add.sh "$username"
