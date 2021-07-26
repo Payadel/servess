@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using FunctionalUtility.Extensions;
 using FunctionalUtility.ResultDetails.Errors;
 using FunctionalUtility.ResultUtility;
@@ -12,7 +13,7 @@ namespace Servess.Libs.Sshd {
         [Command("password", "Enable/Disable users login password")]
         public class Password {
             [Input("path", "p", "SSHD file path", nameof(Path), false)]
-            public string? Path { get; set; }
+            public string Path { get; set; } = ConfigFilePath;
 
             [Input("dl", "dl",
                 "Show users can't use login password", nameof(DisabledList), isRequired: false, hasValue: false)]
@@ -30,12 +31,12 @@ namespace Servess.Libs.Sshd {
                 "Separator char that separates names in input", nameof(NameSeparator), isRequired: false)]
             public char NameSeparator { get; set; } = ' ';
 
-            private const string CommentSign = "#";
+            // private const string CommentSign = "#";
             private const string DisablePasswordGroupName = "disabled-password";
 
             [Operator]
             public MethodResult<string> Operation() {
-                var path = Path ?? ConfigFilePath;
+                var path = Path;
 
                 var targetDisablePasswords = DisableUserPassword?.ToLower().Split(NameSeparator).Distinct().ToList();
                 var targetEnablePasswords = EnableUserPassword?.ToLower().Split(NameSeparator).Distinct().ToList();
@@ -44,7 +45,8 @@ namespace Servess.Libs.Sshd {
                         new BadRequestError(message: "Enable and Disable list have duplicate items."));
                 }
 
-                if (DisabledList is null && targetDisablePasswords.IsNullOrEmpty() && targetEnablePasswords.IsNullOrEmpty()) {
+                if (DisabledList is null && targetDisablePasswords.IsNullOrEmpty() &&
+                    targetEnablePasswords.IsNullOrEmpty()) {
                     return MethodResult<string>.Ok("Done");
                 }
 
@@ -53,13 +55,17 @@ namespace Servess.Libs.Sshd {
                         message: $"Can't find {path}"));
                 }
 
+                if (!targetDisablePasswords.IsNullOrEmpty() || !targetEnablePasswords.IsNullOrEmpty()) {
+                    EnsureQueryIsExist();
+                }
+
                 var currentDisabledUsers = GetDisableUsers();
                 if (targetDisablePasswords != null) {
                     foreach (var user in targetDisablePasswords.Where(user => !currentDisabledUsers.Contains(user))) {
                         DisablePassword(user);
                     }
                 }
-                
+
                 if (targetEnablePasswords != null) {
                     foreach (var user in currentDisabledUsers.Where(user => targetEnablePasswords.Contains(user))) {
                         EnablePassword(user);
@@ -72,15 +78,28 @@ namespace Servess.Libs.Sshd {
                         Console.Write($"{user} ");
                     }
                 }
-                
+
                 return MethodResult<string>.Ok("Done");
+            }
+
+            private void EnsureQueryIsExist() {
+                var isQueryExist = !string.IsNullOrEmpty(
+                    Utility.ExecuteBashCommand($"cat {Path} | grep \"Match Group DisablePasswordGroupName\""));
+                if (isQueryExist) return;
+
+                var sb = new StringBuilder();
+                sb.Append(File.ReadLines(Path))
+                    .AppendLine()
+                    .AppendLine("Match Group DisablePasswordGroupName")
+                    .AppendLine("    PasswordAuthentication no");
+                File.WriteAllText(Path, sb.ToString());
             }
 
             private static void DisablePassword(string user) {
                 //Add user to group
                 Utility.ExecuteBashCommand($"sudo usermod -aG {DisablePasswordGroupName} \"{user}\"");
             }
-            
+
             private static void EnablePassword(string user) {
                 //Remove user from group
                 Utility.ExecuteBashCommand($"gpasswd -d \"{user}\" {DisablePasswordGroupName}");
