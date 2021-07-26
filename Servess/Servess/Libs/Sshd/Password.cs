@@ -61,14 +61,14 @@ namespace Servess.Libs.Sshd {
                 }
 
                 var currentDisabledUsers = GetDisableUsers();
-                if (targetDisablePasswords != null) {
-                    foreach (var user in targetDisablePasswords.Where(user => !currentDisabledUsers.Contains(user))) {
+                if (!targetDisablePasswords.IsNullOrEmpty()) {
+                    foreach (var user in targetDisablePasswords!.Where(user => !currentDisabledUsers.Contains(user))) {
                         DisablePassword(user);
                     }
                 }
 
-                if (targetEnablePasswords != null) {
-                    foreach (var user in currentDisabledUsers.Where(user => targetEnablePasswords.Contains(user))) {
+                if (!targetEnablePasswords.IsNullOrEmpty()) {
+                    foreach (var user in currentDisabledUsers.Where(user => targetEnablePasswords!.Contains(user))) {
                         EnablePassword(user);
                     }
                 }
@@ -78,6 +78,8 @@ namespace Servess.Libs.Sshd {
                     foreach (var user in GetDisableUsers()) {
                         Console.Write($"{user} ");
                     }
+
+                    Console.WriteLine();
                 }
 
                 return MethodResult<string>.Ok("Done");
@@ -85,11 +87,11 @@ namespace Servess.Libs.Sshd {
 
             private static void EnsureGroupIsExist() {
                 var isGroupExist = !string.IsNullOrEmpty(
-                        Utility.ExecuteBashCommand($"cat /etc/group | grep \"{DisablePasswordGroupName}\""));
+                    Utility.ExecuteBashCommand($"cat /etc/group | grep \"{DisablePasswordGroupName}\""));
                 if (isGroupExist) {
                     return;
                 }
-                
+
                 Utility.ExecuteBashCommand($"groupadd \"{DisablePasswordGroupName}\"");
             }
 
@@ -108,12 +110,16 @@ namespace Servess.Libs.Sshd {
 
             private static void DisablePassword(string user) {
                 //Add user to group
+                Console.Write($"Adds {user} to {DisablePasswordGroupName}... ");
                 Utility.ExecuteBashCommand($"sudo usermod -aG {DisablePasswordGroupName} \"{user}\"");
+                Console.Write("Done");
             }
 
             private static void EnablePassword(string user) {
                 //Remove user from group
+                Console.Write($"Removes {user} from {DisablePasswordGroupName}... ");
                 Utility.ExecuteBashCommand($"gpasswd -d \"{user}\" {DisablePasswordGroupName}");
+                Console.Write("Done");
             }
 
             private static List<string> GetDisableUsers() {
