@@ -71,14 +71,14 @@ namespace Servess.Libs.Sshd {
 
                     Console.WriteLine("currentDisabledUsers:");
                     foreach (var a in currentDisabledUsers) {
-                        Console.WriteLine(a);
+                        Console.WriteLine($"s{a}s");
                     }
                     
                     Console.WriteLine("targetEnablePasswords:");
-                    foreach (var a in targetEnablePasswords ?? new List<string>()) {
-                        Console.WriteLine(a);
+                    foreach (var a in targetEnablePasswords!) {
+                        Console.WriteLine($"s{a}s");
                     }
-                    
+
                     foreach (var user in currentDisabledUsers.Where(user => targetEnablePasswords!.Contains(user))) {
                         EnablePassword(user);
                     }
@@ -140,6 +140,7 @@ namespace Servess.Libs.Sshd {
                 }
 
                 return group.Split(":")[3]
+                    .Trim()
                     .Split(",")
                     .ToList();
             }
