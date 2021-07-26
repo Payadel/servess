@@ -68,17 +68,6 @@ namespace Servess.Libs.Sshd {
                 }
 
                 if (!targetEnablePasswords.IsNullOrEmpty()) {
-
-                    Console.WriteLine("currentDisabledUsers:");
-                    foreach (var a in currentDisabledUsers) {
-                        Console.WriteLine($"s{a}s");
-                    }
-                    
-                    Console.WriteLine("targetEnablePasswords:");
-                    foreach (var a in targetEnablePasswords!) {
-                        Console.WriteLine($"s{a}s");
-                    }
-
                     foreach (var user in currentDisabledUsers.Where(user => targetEnablePasswords!.Contains(user))) {
                         EnablePassword(user);
                     }
