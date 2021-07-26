@@ -7,8 +7,8 @@ using Servess.Attributes;
 
 namespace Servess.Libs.Sshd {
     public static partial class Sshd {
-        [Command("password", "disable/enable login with password")]
-        public class PasswordClass {
+        [Command("root-password", "disable/enable root login password")]
+        public class RootPassword {
             [Input("path", "p", "SSHD file path", nameof(Path), false)]
             public string? Path { get; set; }
 
@@ -22,6 +22,7 @@ namespace Servess.Libs.Sshd {
 
             private const string Separator = " ";
             private const string CommentSign = "#";
+            private const string PermitRootLogin = "PermitRootLogin";
 
             [Operator]
             public MethodResult<string> Operation() {
@@ -34,7 +35,6 @@ namespace Servess.Libs.Sshd {
                             new BadRequestError(message: "Error! Can't set both disable and enable flags."));
                 }
 
-                const string permitRootLogin = "PermitRootLogin";
                 var path = Path ?? ConfigFilePath;
 
                 if (!File.Exists(path)) {
@@ -47,7 +47,7 @@ namespace Servess.Libs.Sshd {
                     using var fileStream = new FileStream(path, FileMode.Open, FileAccess.ReadWrite,
                         FileShare.Read);
 
-                    var methodResult = Utility.AddOrUpdateKeyValue(lines, permitRootLogin,
+                    var methodResult = Utility.AddOrUpdateKeyValue(lines, PermitRootLogin,
                         DisablePassword is not null ? "without-password" : "yes", Separator, CommentSign);
 
                     fileStream.Close();
