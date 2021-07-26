@@ -15,7 +15,7 @@ namespace Servess.Libs.Sshd {
             [Input("path", "p", "SSHD file path", nameof(Path), false)]
             public string Path { get; set; } = ConfigFilePath;
 
-            [Input("dl", "dl",
+            [Input("disabled-list", "dl",
                 "Show users can't use login password", nameof(DisabledList), isRequired: false, hasValue: false)]
             public bool? DisabledList { get; set; }
 
@@ -56,6 +56,7 @@ namespace Servess.Libs.Sshd {
                 }
 
                 if (!targetDisablePasswords.IsNullOrEmpty() || !targetEnablePasswords.IsNullOrEmpty()) {
+                    EnsureGroupIsExist();
                     EnsureQueryIsExist();
                 }
 
@@ -82,15 +83,25 @@ namespace Servess.Libs.Sshd {
                 return MethodResult<string>.Ok("Done");
             }
 
+            private static void EnsureGroupIsExist() {
+                var isGroupExist = !string.IsNullOrEmpty(
+                        Utility.ExecuteBashCommand($"cat /etc/group | grep \"{DisablePasswordGroupName}\""));
+                if (isGroupExist) {
+                    return;
+                }
+                
+                Utility.ExecuteBashCommand($"groupadd \"{DisablePasswordGroupName}\"");
+            }
+
             private void EnsureQueryIsExist() {
                 var isQueryExist = !string.IsNullOrEmpty(
-                    Utility.ExecuteBashCommand($"cat {Path} | grep \"Match Group DisablePasswordGroupName\""));
+                    Utility.ExecuteBashCommand($"cat {Path} | grep \"Match Group {DisablePasswordGroupName}\""));
                 if (isQueryExist) return;
 
                 var sb = new StringBuilder();
-                sb.Append(File.ReadLines(Path))
+                sb.Append(File.ReadAllText(Path))
                     .AppendLine()
-                    .AppendLine("Match Group DisablePasswordGroupName")
+                    .AppendLine($"Match Group {DisablePasswordGroupName}")
                     .AppendLine("    PasswordAuthentication no");
                 File.WriteAllText(Path, sb.ToString());
             }
