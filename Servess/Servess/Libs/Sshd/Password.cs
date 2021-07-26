@@ -68,6 +68,17 @@ namespace Servess.Libs.Sshd {
                 }
 
                 if (!targetEnablePasswords.IsNullOrEmpty()) {
+
+                    Console.WriteLine("currentDisabledUsers:");
+                    foreach (var a in currentDisabledUsers) {
+                        Console.WriteLine(a);
+                    }
+                    
+                    Console.WriteLine("targetEnablePasswords:");
+                    foreach (var a in targetEnablePasswords ?? new List<string>()) {
+                        Console.WriteLine(a);
+                    }
+                    
                     foreach (var user in currentDisabledUsers.Where(user => targetEnablePasswords!.Contains(user))) {
                         EnablePassword(user);
                     }
@@ -112,14 +123,14 @@ namespace Servess.Libs.Sshd {
                 //Add user to group
                 Console.Write($"Adds {user} to {DisablePasswordGroupName}... ");
                 Utility.ExecuteBashCommand($"sudo usermod -aG {DisablePasswordGroupName} \"{user}\"");
-                Console.Write("Done");
+                Console.WriteLine("Done");
             }
 
             private static void EnablePassword(string user) {
                 //Remove user from group
                 Console.Write($"Removes {user} from {DisablePasswordGroupName}... ");
                 Utility.ExecuteBashCommand($"gpasswd -d \"{user}\" {DisablePasswordGroupName}");
-                Console.Write("Done");
+                Console.WriteLine("Done");
             }
 
             private static List<string> GetDisableUsers() {
