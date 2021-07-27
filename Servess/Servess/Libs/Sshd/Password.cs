@@ -63,13 +63,19 @@ namespace Servess.Libs.Sshd {
                 var currentDisabledUsers = GetDisableUsers();
                 if (!targetDisablePasswords.IsNullOrEmpty()) {
                     foreach (var user in targetDisablePasswords!.Where(user => !currentDisabledUsers.Contains(user))) {
-                        DisablePassword(user);
+                        var disablePasswordMethodResult = DisablePassword(user);
+                        if (!disablePasswordMethodResult.IsSuccess) {
+                            return disablePasswordMethodResult;
+                        }
                     }
                 }
 
                 if (!targetEnablePasswords.IsNullOrEmpty()) {
                     foreach (var user in currentDisabledUsers.Where(user => targetEnablePasswords!.Contains(user))) {
-                        EnablePassword(user);
+                        var enablePasswordMethodResult = EnablePassword(user);
+                        if (!enablePasswordMethodResult.IsSuccess) {
+                            return enablePasswordMethodResult;
+                        }
                     }
                 }
 
@@ -108,18 +114,32 @@ namespace Servess.Libs.Sshd {
                 File.WriteAllText(Path, sb.ToString());
             }
 
-            private static void DisablePassword(string user) {
+            private MethodResult<string> DisablePassword(string user) {
                 //Add user to group
-                Console.Write($"Adds {user} to {DisablePasswordGroupName}... ");
+                Console.Write($"Adds {user} to {DisablePasswordGroupName} group... ");
                 Utility.ExecuteBashCommand($"sudo usermod -aG {DisablePasswordGroupName} \"{user}\"");
                 Console.WriteLine("Done");
+                if (user.ToLower() != "root") return MethodResult<string>.Ok("Done");
+
+                var rootPassword = new RootPassword {
+                    Path = Path,
+                    DisablePassword = true
+                };
+                return rootPassword.Operation();
             }
 
-            private static void EnablePassword(string user) {
+            private MethodResult<string> EnablePassword(string user) {
                 //Remove user from group
-                Console.Write($"Removes {user} from {DisablePasswordGroupName}... ");
+                Console.Write($"Removes {user} from {DisablePasswordGroupName} group... ");
                 Utility.ExecuteBashCommand($"gpasswd -d \"{user}\" {DisablePasswordGroupName}");
                 Console.WriteLine("Done");
+                if (user.ToLower() != "root") return MethodResult<string>.Ok("Done");
+
+                var rootPassword = new RootPassword {
+                    Path = Path,
+                    DisablePassword = false
+                };
+                return rootPassword.Operation();
             }
 
             private static List<string> GetDisableUsers() {
