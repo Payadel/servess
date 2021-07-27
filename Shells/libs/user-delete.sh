@@ -1,5 +1,5 @@
 #Libs
-if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ]; then
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-get-homeDir.sh ] || [ ! -f /opt/shell-libs/password-enable.sh ]; then
     echo "Can't find libs." >&2
     echo "Operation failed." >&2
     exit 1
@@ -16,14 +16,14 @@ else
 fi
 
 #Check is user exist?
-id "$username" &>/dev/null
+is_user_exist "$username"
 if [ "$?" != "0" ]; then
     echo -e "$ERROR_COLORIZED: The user does not exist." >&2
     exit 1
 fi
 
 #Find user home dir
-homeDir=$(getent passwd "$username" | cut -d: -f6)
+homeDir=$(/opt/shell-libs/user-get-homeDir.sh "$username")
 if [ "$?" != 0 ] || [ -z "$homeDir" ]; then
     echo -e "$ERROR_COLORIZED: Can't detect user home directory."
     printf "User home directory: "
@@ -85,6 +85,9 @@ if [ "$create_backup" = "y" ] || [ "$create_backup" = "Y" ]; then
     sudo tar -zcvf "$backup_dir/user_${username}_backup.tgz" "$homeDir"
     exit_if_operation_failed "$?"
 fi
+
+/opt/shell-libs/password-enable.sh "$username"
+show_warning_if_operation_failed "$?"
 
 printf "do you wand delete user home dir? (y/n): "
 read delete_user_homeDir

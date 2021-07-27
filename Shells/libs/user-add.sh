@@ -1,5 +1,5 @@
 #Libs
-if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ]; then
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/sshKey-config.sh ] || [ ! -f /opt/shell-libs/user-delete.sh ]; then
     echo "Can't find libs." >&2
     echo "Operation failed." >&2
     exit 1
@@ -111,6 +111,13 @@ else
 fi
 delete_user_if_operation_failed "$?"
 echo ""
+
+#SSH Key
+printf "Do you want add ssh key? (y/n): "
+read add_ssh_key
+if [ "$add_ssh_key" = "y" ] || [ "$add_ssh_key" = "Y" ]; then
+    /opt/shell-libs/sshKey-config.sh "$username"
+fi
 
 echo_info "Restarting ssh..."
 sudo systemctl restart ssh
