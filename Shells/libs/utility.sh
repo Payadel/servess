@@ -38,3 +38,17 @@ is_user_exist() {
     id "$username" &>/dev/null
     return $?
 }
+
+delete_user_if_operation_failed() {
+    local code="$1"
+
+    if [ "$code" != "0" ]; then
+        echo_error "Operation failed."
+        printf "Do you want delete user? (y/n): "
+        read delete_user
+
+        if [ "$delete_user" = "y" ] || [ "$delete_user" = "Y" ]; then
+            /opt/shell-libs/user-delete.sh "$delete_user"
+        fi
+    fi
+}
