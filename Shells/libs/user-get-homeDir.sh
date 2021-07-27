@@ -1,3 +1,12 @@
+#Libs
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ]; then
+    echo "Can't find libs." >&2
+    echo "Operation failed." >&2
+    exit 1
+fi
+. /opt/shell-libs/colors.sh
+. /opt/shell-libs/utility.sh
+
 username="$1"
 if [ -z "$username" ]; then
     printf "Username: "
@@ -6,7 +15,7 @@ fi
 
 is_user_exist "$username"
 if [ "$?" != 0 ]; then
-    echo "Invalid username."
+    echo_error "Invalid username."
     exit 1
 fi
 
