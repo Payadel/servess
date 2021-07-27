@@ -31,7 +31,7 @@ user_must_exist "$username"
 
 public_key="$2"
 if [ -z "$public_key" ]; then
-    printf "Public Key for $username: "
+    printf "Public Key for $username (empty for generate one-time key): "
     read public_key
 fi
 
@@ -54,6 +54,21 @@ ssh_dir="$homeDir/.ssh"
 if [ ! -d "$ssh_dir" ]; then
     echo_info "Create directory: $ssh_dir"
     mkdir -p "$ssh_dir"
+    exit_if_operation_failed "$?"
+fi
+
+if [ -z "$public_key" ]; then
+    private_key_file="$ssh_dir/temp"
+    ssh-keygen -f "$private_key_file" -b 4096
+    exit_if_operation_failed "$?"
+
+    public_key_file="$private_key_file.pub"
+    public_key=$(cat "$public_key_file")
+
+    echo_warning "Private Key (write it down, as it will never be displayed again): "
+    cat "$private_key_file"
+    echo_warning "Save private key in safe place."
+    sudo rm "$private_key_file"
     exit_if_operation_failed "$?"
 fi
 
