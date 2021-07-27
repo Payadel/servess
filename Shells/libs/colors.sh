@@ -99,3 +99,7 @@ echo_info() {
 echo_warning() {
     echo -e "${WARNING_COLORIZED}: $1"
 }
+
+echo_error() {
+    echo -e "${ERROR_COLORIZED}: $1" >&2
+}

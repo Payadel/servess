@@ -13,7 +13,7 @@ exit_if_operation_failed() {
         if [ ! -z "$message" ]; then
             echo -e "$message" >&2
         else
-            echo -e "$ERROR_COLORIZED: Operation failed with code $code." >&2
+            echo_error "Operation failed with code $code."
         fi
         exit "$code"
     fi
@@ -27,7 +27,14 @@ show_warning_if_operation_failed() {
         if [ ! -z "$message" ]; then
             echo -e "$message" >&2
         else
-            echo -e "$WARNING_COLORIZED: Operation failed with code $code." >&2
+            echo_warning "Operation failed with code $code."
         fi
     fi
+}
+
+is_user_exist() {
+    local username="$1"
+
+    id "$username" &>/dev/null
+    return $?
 }
