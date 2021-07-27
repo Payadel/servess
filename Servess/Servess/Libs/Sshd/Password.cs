@@ -115,6 +115,7 @@ namespace Servess.Libs.Sshd {
             }
 
             private MethodResult<string> DisablePassword(string user) {
+                user = user.Trim().ToLower();
                 //Add user to group
                 Console.Write($"Adds {user} to {DisablePasswordGroupName} group... ");
                 Utility.ExecuteBashCommand($"sudo usermod -aG {DisablePasswordGroupName} \"{user}\"");
@@ -129,6 +130,7 @@ namespace Servess.Libs.Sshd {
             }
 
             private MethodResult<string> EnablePassword(string user) {
+                user = user.Trim().ToLower();
                 //Remove user from group
                 Console.Write($"Removes {user} from {DisablePasswordGroupName} group... ");
                 Utility.ExecuteBashCommand($"gpasswd -d \"{user}\" {DisablePasswordGroupName}");
@@ -137,7 +139,7 @@ namespace Servess.Libs.Sshd {
 
                 var rootPassword = new RootPassword {
                     Path = Path,
-                    DisablePassword = false
+                    EnablePassword = true
                 };
                 return rootPassword.Operation();
             }
