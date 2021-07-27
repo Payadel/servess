@@ -70,6 +70,8 @@ if [ -z "$public_key" ]; then
     echo_warning "Save private key in safe place."
     sudo rm "$private_key_file"
     exit_if_operation_failed "$?"
+
+    sudo rm "$public_key_file"
 fi
 
 file="$ssh_dir/authorized_keys"
