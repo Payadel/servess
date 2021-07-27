@@ -110,7 +110,7 @@ if [ "$expire_password" = "y" ] || [ "$expire_password" = "Y" ]; then
 fi
 
 #Access ssh
-/opt/shell-libs/user-ssh-access.sh "$username" "$allowUsers"
+/opt/shell-libs/user-ssh-access.sh "$username" "$allow_ssh"
 delete_user_if_operation_failed "$?"
 echo ""
 
