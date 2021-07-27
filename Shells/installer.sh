@@ -1,11 +1,23 @@
-if [ ! -f /opt/shell-libs/colors.sh ]; then
-    echo "Can't find /opt/shell-libs/colors.sh" >&2
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ]; then
+    echo "Can't find libs" >&2
     echo "Operation failed." >&2
     exit 1
 fi
 . /opt/shell-libs/colors.sh
+. /opt/shell-libs/utility.sh
+
+echo_skipped_operation() {
+    echo_warning "Operation skipped."
+    echo "Operation skipped." >>$statusFile
+}
 
 run() {
+    if [ "$#" -lt 2 ]; then
+        echo_error "Too few inputs to run function."
+        echo_skip_operation
+        return 1
+    fi
+
     process_name=$1
     execute_path=$2
 
@@ -13,16 +25,18 @@ run() {
     echo "Processing $process_name..." >>$statusFile
 
     sudo chmod +x $execute_path
-    $execute_path $3 $4 $5 $6 $7 $8 $9
+    if [ "$?" != "0" ]; then
+        echo_skipped_operation
+        return 1
+    fi
 
-    if [ $? -eq 0 ]; then
+    $execute_path $3 $4 $5 $6 $7 $8 $9
+    if [ "$?" = 0 ]; then
         echo -e "$DONE_COLORIZED"
         echo "DONE." >>$statusFile
     else
-        echo -e "$FAILED_COLORIZED."
-        echo "FAILED." >>$statusFile >&2
-        # notify-send "$process_name" 'An error has occurred.' -u critical
-        exit $?
+        echo_skipped_operation
+        return 1
     fi
 
     echo "============================================================" >>$statusFile
@@ -43,16 +57,16 @@ else
 fi
 backup_dirName="server-backups"
 backup_dir="$backup_basePath/$backup_dirName"
-sudo mkdir -p "$backup_dir"
-sudo chmod 750 "$backup_dir"
+sudo mkdir -p "$backup_dir" && sudo chmod 750 "$backup_dir"
+exit_if_operation_failed "$?"
 
 # Status file
 statusFile="install-status.txt"
 if [ -f "$statusFile" ]; then
     rm "$statusFile"
 fi
-touch "$statusFile"
-sudo chmod 750 "$statusFile"
+touch "$statusFile" && sudo chmod 750 "$statusFile"
+exit_if_operation_failed "$?"
 
 #Server finger print
 run "Server Finger Print" /opt/shell-libs/serverFingerPrint-get.sh
@@ -60,7 +74,6 @@ run "Server Finger Print" /opt/shell-libs/serverFingerPrint-get.sh
 #timeshift
 run "install timeshift" /opt/shell-libs/timeshift-install.sh
 run "Create Timeshift Backup" /opt/shell-libs/timeshift-createBackup.sh "First Backup"
-chmod 750 /timeshift
 
 #Update
 run "update" /opt/shell-libs/update.sh
@@ -85,12 +98,9 @@ run "Backup dns" /opt/shell-libs/backup.sh "/etc/netplan/01-netcfg.yaml" "$backu
 run "Update" /opt/shell-libs/update.sh
 
 #SSH-Key
-run "SSH Key config" /opt/shell-libs/sshKey-config.sh "$editor"
-
-#Disable password
 name=$(date +"%s")
 run "Backup sshd_config" /opt/shell-libs/backup.sh "/etc/ssh/sshd_config" "$backup_dir/etc/ssh/sshd_config" "$name-before"
-run "Disable login with password" /opt/shell-libs/password-disable.sh
+run "SSH Key config" /opt/shell-libs/sshKey-config.sh "root"
 run "Backup sshd_config" /opt/shell-libs/backup.sh "/etc/ssh/sshd_config" "$backup_dir/etc/ssh/sshd_config" "$name-updated"
 
 #curl
