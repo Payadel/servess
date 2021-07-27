@@ -1,5 +1,5 @@
 #Libs
-if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ]; then
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-ssh-access.sh ] || [ ! -f /opt/shell-libs/sshKey-config.sh ]; then
     echo "Can't find libs." >&2
     echo "Operation failed." >&2
     exit 1
@@ -62,7 +62,7 @@ exit_if_operation_failed "$?"
 sudo systemctl disable --now docker.service docker.socket
 
 echo -e "${INFO_COLORIZED}: Adding user ($username)..."
-sudo /opt/shell-libs/user-add.sh "$username"
+sudo /opt/shell-libs/user-add.sh "$username" "n" "n" "y" "n" "y" "n"
 exit_if_operation_failed "$?"
 echo "================================================================================"
 echo ""
@@ -158,6 +158,18 @@ read loginToDocker
 
 if [ "$loginToDocker" = "y" ] || [ "$loginToDocker" = "Y" ]; then
     ssh -t "$username@$server_ip" "docker login"
+fi
+
+#SSH Access
+/opt/shell-libs/user-ssh-access.sh "$username"
+show_warning_if_operation_failed "$?"
+
+#SSH Key
+printf "Do you want add ssh key? (y/n): "
+read add_ssh_key
+if [ "$add_ssh_key" = "y" ] || [ "$add_ssh_key" = "Y" ]; then
+    /opt/shell-libs/sshKey-config.sh "$username"
+    show_warning_if_operation_failed "$?"
 fi
 
 echo_info "Enabling dcoker service..."
