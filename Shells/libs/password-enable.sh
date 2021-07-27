@@ -24,7 +24,7 @@ if [ -z "$username" ]; then
 fi
 user_must_exist "$username"
 
-servess sshd password --disabled-list --disable-password "$username"
+servess sshd password --disabled-list --enable-password "$username"
 exit_if_operation_failed "$?"
 
 echo_info "Restarting ssh service..."
