@@ -61,8 +61,8 @@ file="$ssh_dir/authorized_keys"
 echo "$public_key" >>$file
 exit_if_operation_failed "$?"
 
-sudo chown -R "$username:$username" "$ssh_dir"
-sudo chmod -R 600 "$ssh_dir"
+sudo chown -R "$username:$username" "$ssh_dir" && sudo chmod 700 "$ssh_dir" && sudo chmod -R 600 "$file"
+exit_if_operation_failed "$?"
 
 echo ""
 printf "Do you want disable user password? (y/n): "
