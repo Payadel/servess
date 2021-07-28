@@ -109,8 +109,9 @@ delete_user_if_operation_failed "$?"
 echo ""
 
 #Change secret key
-echo_warning "You should change secret key in mailu.env file:"
+echo_warning "You should change secret keys in mailu.env file:"
 cat "$homeDir/mailu.env" | grep SECRET_KEY
+cat "$homeDir/mailu.env" | grep DB_PW
 printf "Press enter to continue...."
 read temp
 nano "$homeDir/mailu.env"
@@ -173,8 +174,23 @@ echo_info "Config nginx..."
 /opt/shell-libs/nginx-add-app.sh "mail.$domain" "/var/log/nginx" "https://localhost:8443" "/etc/nginx"
 echo ""
 
-user_task "Go to https://mail.$domain/admin, section mail domains, Click on Generate Keys button to generate keys."
-user_task "Set DKIM Keys and DMARC to your DNS."
+user_task "Go to https://mail.$domain/admin, section mail domains, Click un detain button, Then click on Generate Keys button to generate keys."
+echo ""
+
+user_task "Create TXT record DNS:     @    SPF value"
+echo ""
+
+user_task "Create TXT record DNS:     dkim._domainkey.$domain   DKIM value"
+echo ""
+
+user_task "Create TXT record DNS:     _dmarc.$domain   DMARC value"
+echo ""
+
+user_task "Ensure send and receive email are correct."
+echo ""
+
+user_task "Change admin password if is necessary."
+echo ""
 
 #SPF
 echo_info "Cheching SPF record..."
