@@ -42,14 +42,6 @@ port_must_free() {
     done
 }
 
-redirect_port() {
-    local from="$1"
-    local to="$2"
-
-    echo_info "Redirect port $from to $to..."
-    iptables -t nat -A PREROUTING -i email-service -p tcp --dport $from -j REDIRECT --to-port $to
-}
-
 printf "Your domain (like example.com): "
 read domain
 
@@ -142,23 +134,17 @@ echo ""
 
 #Check ports
 port_must_free "25"
-port_must_free "2500"
 port_must_free "8081"
 port_must_free "8443"
 port_must_free "110"
-port_must_free "1100"
 port_must_free "143"
-port_must_free "1430"
 port_must_free "465"
-port_must_free "4650"
 port_must_free "587"
-port_must_free "5870"
 port_must_free "993"
-port_must_free "9930"
 port_must_free "995"
-port_must_free "9950"
 
-redirect_port 995 9950 && redirect_port 993 9930 && redirect_port 587 5870 && redirect_port 465 4650 && redirect_port 143 1430 && redirect_port 25 2500 && redirect_port 110 1100
+echo_info "For user can listen on ports < 1024, adding net.ipv4.ip_unprivileged_port_start=25 to sysctl.conf..."
+sudo echo "net.ipv4.ip_unprivileged_port_start=25" >>/etc/sysctl.conf
 exit_if_operation_failed "$?"
 echo ""
 
