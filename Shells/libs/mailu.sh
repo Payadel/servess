@@ -77,10 +77,10 @@ echo ""
 user_task "Go to https://setup.mailu.io/ and download setup files if haven't those files."
 echo ""
 
-copy_file "docker-compose" "$homeDir/"
+copy_file "docker-compose" "$homeDir/" "$username"
 delete_user_if_operation_failed "$?"
 
-copy_file "mailu.env" "$homeDir/"
+copy_file "mailu.env" "$homeDir/" "$username"
 delete_user_if_operation_failed "$?"
 
 echo_info "Create directory for volumes..."
@@ -101,10 +101,13 @@ echo "docker-compose down && docker-compose -p mailu up -d" >>"$homeDir/restart.
 show_warning_if_operation_failed "$?"
 echo ""
 
-#Copy cert files:
-copy_file "privkey.pem" "$homeDir/mailu/certs/key.pem"
+mkdir -p "$homeDir/mailu/certs" && sudo chown "$username:$username" "$homeDir/mailu/certs" && sudo chmod 750 "$homeDir/mailu/certs"
 show_warning_if_operation_failed "$?"
-copy_file "fullchain.pem" "$homeDir/mailu/certs/cert.pem"
+
+#Copy cert files:
+copy_file "privkey.pem" "$homeDir/mailu/certs/key.pem" "$username"
+show_warning_if_operation_failed "$?"
+copy_file "fullchain.pem" "$homeDir/mailu/certs/cert.pem" "$username"
 show_warning_if_operation_failed "$?"
 echo ""
 
