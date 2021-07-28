@@ -18,13 +18,28 @@ copy_file() {
     local output="$2"
     local username="$3"
 
-    printf "$fileName file: "
-    read file
-    if [ ! -f "$file" ]; then
+    while true; do
+        printf "$fileName file: "
+        read file
+        if [ -f "$file" ]; then
+            sudo cp "$file" "$output" && sudo chown "$username:$username" "$file"
+            break
+        fi
         echo_error "Can not find file: $file"
-        exit 1
-    fi
-    sudo cp "$file" "$output" && sudo chown "$username:$username" "$file"
+    done
+}
+
+port_must_free() {
+    local port="$1"
+
+    while true; do
+        result=$(sudo lsof -i:$port)
+        if [ "$?" = 0 ] && [ -z "$result" ]; then
+            break
+        fi
+        echo_error "Port $port is not free. Press enter to check again..."
+        read temp
+    done
 }
 
 printf "Your domain (like example.com): "
@@ -35,6 +50,8 @@ mail_ipAddress=$(nslookup -type=A "mail.$domain" | grep "Address:" | gawk -F: '{
 if [ "$?" != 0 ] || [ -z "$mail_ipAddress" ]; then
     echo_warning "We have trouble with DNS!"
     user_task "Ensure DNS is correct."
+else
+    echo_info "Looks good."
 fi
 
 user_task "Create MX record DNS:     @    mail.$domain"
@@ -42,6 +59,8 @@ mx_record=$(nslookup -type=MX "$domain" | grep $domain | grep mail.$domain)
 if [ "$?" != 0 ] || [ -z "$mx_record" ]; then
     echo_warning "We have trouble with MX DNS record"
     user_task "Ensure DNS is correct."
+else
+    echo_info "Looks good."
 fi
 echo ""
 
@@ -111,6 +130,17 @@ copy_file "fullchain.pem" "$homeDir/mailu/certs/cert.pem" "$username"
 show_warning_if_operation_failed "$?"
 echo ""
 
+#Check ports
+port_must_free "25"
+port_must_free "8081"
+port_must_free "8443"
+port_must_free "110"
+port_must_free "143"
+port_must_free "465"
+port_must_free "587"
+port_must_free "993"
+port_must_free "995"
+
 echo_info "Running containers with docker-compose..."
 docker-compose -p mailu up -d
 exit_if_operation_failed "$?"
@@ -133,24 +163,33 @@ user_task "Go to https://mail.$domain/admin, section mail domains, Click on Gene
 user_task "Set DKIM Keys and DMARC to your DNS."
 
 #SPF
+echo_info "Cheching SPF record..."
 spf_record=$(nslookup -type=txt "$domain" | grep $domain | grep v=spf)
 if [ "$?" != 0 ] || [ -z "$spf_record" ]; then
     echo_warning "We have trouble with SPF DNS record"
     user_task "Ensure DNS is correct."
+else
+    echo_info "Looks good."
 fi
 
 #DKIM
+echo_info "Cheching DKIM record..."
 dkim_record=$(nslookup -type=txt dkim._domainkey.$domain | grep dkim._domainkey.$domain)
 if [ "$?" != 0 ] || [ -z "$dkim_record" ]; then
     echo_warning "We have trouble with DKIM DNS record"
     user_task "Ensure DNS is correct."
+else
+    echo_info "Looks good."
 fi
 
 #DMARC
+echo_info "Cheching DMARC record..."
 dmarc_record=$(nslookup -type=txt _dmarc.$domain | grep _dmarc.$domain)
 if [ "$?" != 0 ] || [ -z "$dmarc_record" ]; then
     echo_warning "We have trouble with DMARC DNS record"
     user_task "Ensure DNS is correct."
+else
+    echo_info "Looks good."
 fi
 echo ""
 
