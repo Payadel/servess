@@ -43,11 +43,13 @@ if [ "$?" != 0 ] || [ -z "$mx_record" ]; then
     echo_warning "We have trouble with MX DNS record"
     user_task "Ensure DNS is correct."
 fi
+echo ""
 
 #Config firewall
 echo_info "Config firewall..."
 sudo ufw allow 25,80,443,110,143,465,587,993,995/tcp
 exit_if_operation_failed "$?"
+echo ""
 
 echo_info "Create user for mail services..."
 printf "Username: "
@@ -70,8 +72,10 @@ if [ "$?" != 0 ] || [ -z "$homeDir" ]; then
 else
     echo_info "User home directory detected: $homeDir"
 fi
+echo ""
 
 user_task "Go to https://setup.mailu.io/ and download setup files if haven't those files."
+echo ""
 
 copy_file "docker-compose" "$homeDir/"
 delete_user_if_operation_failed "$?"
@@ -82,36 +86,47 @@ delete_user_if_operation_failed "$?"
 echo_info "Create directory for volumes..."
 mkdir "$homeDir/mailu" && sudo chown "$username:$username" "$homeDir/mailu"
 delete_user_if_operation_failed "$?"
+echo ""
 
 #Change secret key
 echo_warning "You should change secret key in mailu.env file:"
 cat "$homeDir/mailu.env" | grep SECRET_KEY
 printf "Press enter to continue...."
+read temp
 nano "$homeDir/mailu.env"
+echo ""
 
 #Create restart.sh
-cat "docker-compose down && docker-compose -p mailu up -d" >>"$homeDir/restart.sh"
-sudo chown "$username:$username" "$homeDir/restart.sh" && sudo chmod +x "$homeDir/restart.sh"
+echo "docker-compose down && docker-compose -p mailu up -d" >>"$homeDir/restart.sh" && sudo chown "$username:$username" "$homeDir/restart.sh" && sudo chmod +x "$homeDir/restart.sh"
 show_warning_if_operation_failed "$?"
+echo ""
 
 #Copy cert files:
-copy_file "privkey.pem" "$homeDir/mailu/certs/key.pem" && copy_file "fullchain.pem" "$homeDir/mailu/certs/cert.pem"
+copy_file "privkey.pem" "$homeDir/mailu/certs/key.pem"
 show_warning_if_operation_failed "$?"
+copy_file "fullchain.pem" "$homeDir/mailu/certs/cert.pem"
+show_warning_if_operation_failed "$?"
+echo ""
 
 echo_info "Running containers with docker-compose..."
 docker-compose -p mailu up -d
 exit_if_operation_failed "$?"
 
-echo_info "Sleep 15s to ensure all containers are run..."
-sleep 15s
+echo_info "Sleep 10s to ensure all containers are run..."
+sleep 10s
 echo ""
 
-printf "Password for admin@yourdomain.com: "
+echo_info "Config nginx..."
+/opt/shell-libs/nginx-add-app.sh "mail.$domain" "/var/log/nginx" "https://localhost:8443" "/etc/nginx"
+echo ""
+
+printf "Password for admin@$domain: "
 read admin_password
 docker-compose -p mailu exec admin flask mailu admin admin inlearn.in "$admin_password"
 show_warning_if_operation_failed "$?"
+echo ""
 
-user_task "Go to https://yourdomain.com/admin, section mail domains, Click on Generate Keys button to generate keys."
+user_task "Go to https://mail.$domain/admin, section mail domains, Click on Generate Keys button to generate keys."
 user_task "Set DKIM Keys and DMARC to your DNS."
 
 #SPF
@@ -134,8 +149,6 @@ if [ "$?" != 0 ] || [ -z "$dmarc_record" ]; then
     echo_warning "We have trouble with DMARC DNS record"
     user_task "Ensure DNS is correct."
 fi
-
-echo_info "Config nginx..."
-/opt/shell-libs/nginx-add-app.sh "$domain" "/var/log/nginx" "https://localhost:8443" "/etc/nginx"
+echo ""
 
 user_task "You can check email with https://mxtoolbox.com/deliverability/"
