@@ -23,7 +23,7 @@ fileOrDir_must_exist() {
 proxy_must_valid() {
     local proxy_pass="$1"
 
-    curl_test=$(curl -s -I $proxy_pass)
+    curl_result=$(curl -s -I --insecure "$proxy_pass")
     if [ $? != 0 ]; then
         printf "We have trouble with $proxy_pass. Are you sure proxy pass is valid? (y/n): "
         read isProxyPassValid

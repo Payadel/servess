@@ -139,7 +139,8 @@ show_warning_if_operation_failed "$?"
 
 echo -e "$DONE_COLORIZED"
 
-curl_test=$(curl -s -I $proxy_pass)
-
+curl_result=$(curl -s -I --insecure "$proxy_pass")
+if [ $? = 0 ]; then
+    echo_warning "$proxy_pass is still running. Terminate it."
+fi
 echo ""
-show_warning_if_operation_failed "$?" "$WARNING_COLORIZED: $proxy_pass is still running. Terminate it."
