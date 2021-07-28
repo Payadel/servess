@@ -1,3 +1,5 @@
+# //TODO: Create user, then convert it to restrict user
+
 #Libs
 if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ]; then
     echo "Can't find libs." >&2

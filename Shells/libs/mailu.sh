@@ -118,7 +118,7 @@ echo ""
 
 #Create restart.sh
 restart_docker_shell="restart-docker.sh"
-echo "docker-compose down && docker-compose -p mailu up -d" >>"$homeDir/bin/$restart_docker_shell" && sudo chown "$username:$username" "$homeDir/bin/$restart_docker_shell" && sudo chmod +x "$homeDir/bin/$restart_docker_shell"
+sudo chattr -i "$homeDir/bin" && echo "docker-compose down && docker-compose -p mailu up -d" >>"$homeDir/bin/$restart_docker_shell" && sudo chmod +x "$homeDir/bin/$restart_docker_shell" && chattr +i "$homeDir/bin"
 show_warning_if_operation_failed "$?"
 echo ""
 
