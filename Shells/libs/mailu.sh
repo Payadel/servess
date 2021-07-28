@@ -1,5 +1,5 @@
 #Libs
-if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-add-restrict-docker.sh ] || [ ! -f /opt/shell-libs/user-get-homeDir.sh ] || [ ! -f /opt/shell-libs/nginx-add-app.sh ]; then
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-add-restrict-docker.sh ] || [ ! -f /opt/shell-libs/user-get-homeDir.sh ] || [ ! -f /opt/shell-libs/nginx-add-app.sh ] || [ ! -f /opt/shell-libs/ip-current.sh ]; then
     echo "Can't find libs." >&2
     echo "Operation failed." >&2
     exit 1
@@ -34,7 +34,7 @@ port_must_free() {
 
     while true; do
         result=$(sudo lsof -i:$port)
-        if [ "$?" = 0 ] && [ -z "$result" ]; then
+        if [ "$?" != 0 ] && [ -z "$result" ]; then
             break
         fi
         echo_error "Port $port is not free. Press enter to check again..."
@@ -53,6 +53,7 @@ if [ "$?" != 0 ] || [ -z "$mail_ipAddress" ]; then
 else
     echo_info "Looks good."
 fi
+echo ""
 
 user_task "Create MX record DNS:     @    mail.$domain"
 mx_record=$(nslookup -type=MX "$domain" | grep $domain | grep mail.$domain)
@@ -116,7 +117,8 @@ nano "$homeDir/mailu.env"
 echo ""
 
 #Create restart.sh
-echo "docker-compose down && docker-compose -p mailu up -d" >>"$homeDir/restart.sh" && sudo chown "$username:$username" "$homeDir/restart.sh" && sudo chmod +x "$homeDir/restart.sh"
+restart_docker_shell="restart-docker.sh"
+echo "docker-compose down && docker-compose -p mailu up -d" >>"$homeDir/bin/$restart_docker_shell" && sudo chown "$username:$username" "$homeDir/bin/$restart_docker_shell" && sudo chmod +x "$homeDir/bin/$restart_docker_shell"
 show_warning_if_operation_failed "$?"
 echo ""
 
@@ -141,22 +143,29 @@ port_must_free "587"
 port_must_free "993"
 port_must_free "995"
 
+echo_info "Get server ip..."
+server_ip="$(/opt/shell-libs/ip-current.sh)"
+
 echo_info "Running containers with docker-compose..."
-docker-compose -p mailu up -d
+echo "ssh -t "$username@$server_ip""
+ssh -t "$username@$server_ip" "$restart_docker_shell"
 exit_if_operation_failed "$?"
 
-echo_info "Sleep 10s to ensure all containers are run..."
-sleep 10s
+echo_info "Sleep 15s to ensure all containers are run..."
+sleep 15s
+echo ""
+
+echo_info "Set password for admin@$domain..."
+printf "Password for admin@$domain: "
+read admin_password
+
+echo "ssh -t "$username@$server_ip""
+ssh -t "$username@$server_ip" "docker-compose -p mailu exec admin flask mailu admin admin inlearn.in "$admin_password""
+show_warning_if_operation_failed "$?"
 echo ""
 
 echo_info "Config nginx..."
 /opt/shell-libs/nginx-add-app.sh "mail.$domain" "/var/log/nginx" "https://localhost:8443" "/etc/nginx"
-echo ""
-
-printf "Password for admin@$domain: "
-read admin_password
-docker-compose -p mailu exec admin flask mailu admin admin inlearn.in "$admin_password"
-show_warning_if_operation_failed "$?"
 echo ""
 
 user_task "Go to https://mail.$domain/admin, section mail domains, Click on Generate Keys button to generate keys."
@@ -171,6 +180,7 @@ if [ "$?" != 0 ] || [ -z "$spf_record" ]; then
 else
     echo_info "Looks good."
 fi
+echo ""
 
 #DKIM
 echo_info "Cheching DKIM record..."
@@ -181,6 +191,7 @@ if [ "$?" != 0 ] || [ -z "$dkim_record" ]; then
 else
     echo_info "Looks good."
 fi
+echo ""
 
 #DMARC
 echo_info "Cheching DMARC record..."
