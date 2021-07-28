@@ -134,14 +134,42 @@ echo ""
 
 #Check ports
 port_must_free "25"
+port_must_free "2500"
 port_must_free "8081"
 port_must_free "8443"
 port_must_free "110"
+port_must_free "1100"
 port_must_free "143"
+port_must_free "1430"
 port_must_free "465"
+port_must_free "4650"
 port_must_free "587"
+port_must_free "5870"
 port_must_free "993"
+port_must_free "9930"
 port_must_free "995"
+port_must_free "9950"
+
+echo_info "Restrict user can't listen on 995, so redirect port 995 to 9950..."
+sudo iptables -t nat -I OUTPUT -p tcp -d 127.0.0.1 --dport 995 -j REDIRECT --to-ports 9950
+
+echo_info "Restrict user can't listen on 993, so redirect port 993 to 9930..."
+sudo iptables -t nat -I OUTPUT -p tcp -d 127.0.0.1 --dport 993 -j REDIRECT --to-ports 9930
+
+echo_info "Restrict user can't listen on 587, so redirect port 587 to 5870..."
+sudo iptables -t nat -I OUTPUT -p tcp -d 127.0.0.1 --dport 587 -j REDIRECT --to-ports 5870
+
+echo_info "Restrict user can't listen on 465, so redirect port 465 to 4650..."
+sudo iptables -t nat -I OUTPUT -p tcp -d 127.0.0.1 --dport 465 -j REDIRECT --to-ports 4650
+
+echo_info "Restrict user can't listen on 143, so redirect port 143 to 1430..."
+sudo iptables -t nat -I OUTPUT -p tcp -d 127.0.0.1 --dport 143 -j REDIRECT --to-ports 1430
+
+echo_info "Restrict user can't listen on 25, so redirect port 25 to 2500..."
+sudo iptables -t nat -I OUTPUT -p tcp -d 127.0.0.1 --dport 25 -j REDIRECT --to-ports 2500
+
+echo_info "Restrict user can't listen on 110, so redirect port 110 to 1100..."
+sudo iptables -t nat -I OUTPUT -p tcp -d 127.0.0.1 --dport 110 -j REDIRECT --to-ports 1100
 
 echo_info "Get server ip..."
 server_ip="$(/opt/shell-libs/ip-current.sh)"
