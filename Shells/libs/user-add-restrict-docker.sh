@@ -127,7 +127,7 @@ echo ""
 echo_info "Adding contents..."
 chattr -i "$profile_file" "$bash_profile_file" "$bashrc_file"
 
-group_number=$(grep ^$username /etc/group | gawk -F: '{ print $3 }')
+group_number=$(grep ^$username /etc/passwd | gawk -F: '{ print $3 }')
 
 echo "# don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options
