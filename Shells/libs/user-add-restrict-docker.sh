@@ -71,7 +71,7 @@ echo_info "Get server ip..."
 server_ip="$(/opt/shell-libs/ip-current.sh)"
 
 echo "ssh -t "$username@$server_ip""
-ssh -t "$username@$server_ip" "dockerd-rootless-setuptool.sh install && systemctl --user start docker && systemctl --user enable docker"
+ssh -t "$username@$server_ip" "dockerd-rootless-setuptool.sh install && systemctl --user start docker && systemctl --user enable docker; exit"
 exit_if_operation_failed "$?"
 echo "================================================================================"
 echo ""
@@ -157,7 +157,7 @@ printf "Do you want to login in docker? (y/n): "
 read loginToDocker
 
 if [ "$loginToDocker" = "y" ] || [ "$loginToDocker" = "Y" ]; then
-    ssh -t "$username@$server_ip" "docker login"
+    ssh -t "$username@$server_ip" "docker login; exit"
 fi
 
 #SSH Access

@@ -148,7 +148,7 @@ server_ip="$(/opt/shell-libs/ip-current.sh)"
 
 echo_info "Running containers with docker-compose..."
 echo "ssh -t "$username@$server_ip""
-ssh -t "$username@$server_ip" "$restart_docker_shell"
+ssh -t "$username@$server_ip" "$restart_docker_shell; exit"
 exit_if_operation_failed "$?"
 
 echo_info "Sleep 15s to ensure all containers are run..."
@@ -160,7 +160,7 @@ printf "Password for admin@$domain: "
 read admin_password
 
 echo "ssh -t "$username@$server_ip""
-ssh -t "$username@$server_ip" "docker-compose -p mailu exec admin flask mailu admin admin inlearn.in "$admin_password""
+ssh -t "$username@$server_ip" "docker-compose -p mailu exec admin flask mailu admin admin inlearn.in "$admin_password"; exit"
 show_warning_if_operation_failed "$?"
 echo ""
 
