@@ -7,16 +7,6 @@ fi
 . /opt/shell-libs/colors.sh
 . /opt/shell-libs/utility.sh
 
-user_must_exist() {
-    local username="$1"
-
-    is_user_exist "$username"
-    if [ "$?" != 0 ]; then
-        echo_error "User is not exist"
-        exit 1
-    fi
-}
-
 username="$1"
 if [ -z "$username" ]; then
     printf "Username: "

@@ -52,3 +52,13 @@ delete_user_if_operation_failed() {
         fi
     fi
 }
+
+user_must_exist() {
+    local username="$1"
+
+    is_user_exist "$username"
+    if [ "$?" != 0 ]; then
+        echo_error "User is not exist"
+        exit "$?"
+    fi
+}

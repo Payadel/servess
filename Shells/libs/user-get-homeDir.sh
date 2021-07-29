@@ -12,11 +12,6 @@ if [ -z "$username" ]; then
     printf "Username: "
     read username
 fi
-
-is_user_exist "$username"
-if [ "$?" != 0 ]; then
-    echo_error "Invalid username."
-    exit 1
-fi
+user_must_exist "$username"
 
 getent passwd "$username" | cut -d: -f6

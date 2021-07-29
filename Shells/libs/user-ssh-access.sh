@@ -8,6 +8,12 @@ fi
 . /opt/shell-libs/utility.sh
 
 username="$1"
+if [ -z "$username" ]; then
+    printf "Username: "
+    read username
+fi
+user_must_exist "$username"
+
 allow_ssh="$2"
 
 if [ -z "$allow_ssh" ]; then
