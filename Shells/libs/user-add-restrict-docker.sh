@@ -7,40 +7,6 @@ fi
 . /opt/shell-libs/colors.sh
 . /opt/shell-libs/utility.sh
 
-change_owner_root() {
-    if [ "$#" != 3 ]; then
-        echo -e "${BOLD_Red}Inner Error${ENDCOLOR}: Too few inputs." >&2
-        return 1
-    fi
-
-    path=$1
-    access_number=$2
-    is_dir=$3 #true/false
-
-    if [ -f "$path" ]; then
-        echo "Removing file: $path"
-        sudo rm "$path"
-    else
-        if [ -d "$path" ]; then
-            echo "Removing Directory: $path"
-            sudo rm -r "$path"
-        fi
-    fi
-
-    if [ "$is_dir" = "true" ]; then
-        echo "Create empty directory: $path"
-        sudo mkdir "$path"
-    else
-        echo "Create empty file: $path"
-        sudo touch "$path"
-    fi
-
-    echo "Change access file $path"
-    sudo chown root:root "$path" && sudo chmod "$access_number" "$path" && sudo chattr +i "$path"
-    echo "$(ls -l $path)"
-    echo ""
-}
-
 #Get Inputs
 if [ -z "$1" ]; then
     printf "Username: "
@@ -84,6 +50,24 @@ exit_if_operation_failed "$?"
 echo_info "Convert user to restrict mode..."
 /opt/shell-libs/user-convert-to-restrict.sh "$username"
 
+#Find user home dir
+homeDir=$(/opt/shell-libs/user-get-homeDir.sh "$username")
+if [ "$?" != 0 ] || [ -z "$homeDir" ]; then
+    echo_error "Can't detect user home directory."
+    printf "User home directory: "
+    read homeDir
+
+    if [ ! -d "$homeDir" ]; then
+        echo_error "Invalid directory."
+        exit 1
+    fi
+fi
+
+bin_dir="$homeDir/bin"
+if [ ! -d "$bin_dir" ]; then
+    mkdir "$bin_dir"
+fi
+
 echo_info "Adds commands for user"
 sudo chattr -i "$bin_dir"
 sudo ln -s /bin/docker "$bin_dir" && sudo ln -s /usr/local/bin/docker-compose "$bin_dir" && sudo ln -s /bin/scp "$bin_dir" && sudo ln -s /bin/rm "$bin_dir" && sudo ln -s /bin/mkdir "$bin_dir" && sudo ln -s /bin/tar "$bin_dir"
@@ -95,8 +79,9 @@ show_warning_if_operation_failed "$?"
 echo "================================================================================"
 echo ""
 
+profile_file="$homeDir/.profile"
 echo_info "Adding contents..."
-chattr -i "$profile_file" "$bash_profile_file" "$bashrc_file"
+chattr -i "$profile_file"
 
 group_number=$(grep ^$username /etc/passwd | gawk -F: '{ print $3 }')
 
@@ -114,12 +99,7 @@ HISTFILESIZE=2000
 export DOCKER_HOST=unix:///run/user/$group_number/docker.sock" >>"$profile_file"
 exit_if_operation_failed "$?"
 
-echo "if [ -f ~/.profile ]; then
-	. ~/.profile
-fi" | tee -a "$bash_profile_file" | tee -a "$bashrc_file"
-exit_if_operation_failed "$?"
-
-chattr +i "$profile_file" "$bash_profile_file" "$bashrc_file"
+chattr +i "$profile_file"
 show_warning_if_operation_failed "$?"
 
 #===============================================================================
