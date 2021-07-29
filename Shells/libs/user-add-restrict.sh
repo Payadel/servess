@@ -1,7 +1,5 @@
-# //TODO: Create user, then convert it to restrict user
-
 #Libs
-if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ]; then
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-add.sh ] || [ ! -f /opt/shell-libs/user-get-homeDir.sh ]; then
     echo "Can't find libs." >&2
     echo "Operation failed." >&2
     exit 1
@@ -9,37 +7,32 @@ fi
 . /opt/shell-libs/colors.sh
 . /opt/shell-libs/utility.sh
 
-# sudo ln -s /bin/bash /bin/rbash
-echo "Add Restrict User"
+printf "Username: "
+read username
 
-#Gets username
-if [ -z $1 ]; then
-    printf "Username: "
-    read username
-else
-    username=$1
+echo_info "Create user $username..."
+/opt/shell-libs/user-add.sh "$username" "n" "n" "y" "n"
+
+echo_info "Change user bash ro rbash..."
+chsh -s /bin/rbash "$username"
+
+home_dir=$(/opt/shell-libs/user-get-homeDir.sh "$username")
+if [ "$?" != 0 ] || [ -z "$home_dir" ]; then
+    printf "User home directory: "
+    read home_dir
+
+    if [ ! -d "$home_dir" ]; then
+        echo -e "$ERROR_COLORIZED: Invalid directory."
+        exit 1
+    fi
 fi
 
-#Adds user
-home_dir="/home/$username"
-sudo useradd "$username" -s "/bin/rbash" --home-dir "$home_dir"
-
-#Sets password
-sudo passwd "$username"
-
-#Creates home dir & Configs permission
-if [ -d "$home_dir" ]; then
-    sudo rm -r "$home_dir"
-fi
-sudo mkdir "$home_dir" && sudo chown "$username:$username" "$home_dir" && chmod 750 "$home_dir"
-exit_if_operation_failed "$?"
-
-#Creates bin dir & Configs permission
+echo_info "Creates bin dir & Configs permission..."
 bin_dir="$home_dir/bin"
 sudo mkdir -p "$bin_dir" && chmod 755 "$bin_dir" && chattr +i "$bin_dir"
 exit_if_operation_failed "$?"
 
-#Creates .profile & Configs permission
+echo_info "Creates .profile & Configs permission..."
 profile="$home_dir/.profile"
 if [ -f "$profile" ]; then
     sudo rm "$profile"
@@ -48,7 +41,7 @@ echo "readonly PATH=$bin_dir" >>$profile
 sudo chown root:root $profile && sudo chmod 644 $profile && chattr +i $profile
 exit_if_operation_failed "$?"
 
-#Creates .bashrc & Configs permission
+echo_info "Creates .bashrc & Configs permission..."
 bashrc="$home_dir/.bashrc"
 if [ -f "$bashrc" ]; then
     sudo rm "$bashrc"
@@ -57,17 +50,13 @@ echo ". $profile" >>$bashrc
 sudo chown root:root $bashrc && sudo chmod 644 $bashrc && chattr +i $bashrc
 exit_if_operation_failed "$?"
 
-#Creates .bash_profile & Configs permission
+echo_info "Creates .bash_profile & Configs permission..."
 bash_profile="$home_dir/.bash_profile"
 if [ -f "$bash_profile" ]; then
     sudo rm "$bash_profile"
 fi
 echo ". $profile" >>$bash_profile
 sudo chown root:root $bash_profile && sudo chmod 644 $bash_profile && chattr +i $bash_profile
-exit_if_operation_failed "$?"
-
-#Disables welcome banner
-sudo touch "$home_dir/.hushlogin" && chattr +i "$home_dir/.hushlogin"
 exit_if_operation_failed "$?"
 
 echo -e "${BOLD_GREEN}You can add command for $username with below command:${ENDCOLOR}"
