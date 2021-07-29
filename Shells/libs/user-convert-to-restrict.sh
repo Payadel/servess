@@ -8,15 +8,22 @@ fi
 . /opt/shell-libs/utility.sh
 
 change_owner_root() {
-    if [ "$#" != 3 ]; then
+    if [ "$#" -lt 3 ]; then
         echo -e "${BOLD_Red}Inner Error${ENDCOLOR}: Too few inputs." >&2
         return 1
     fi
 
-    path=$1
+    path="$1"
     access_number=$2
     is_dir=$3 #true/false
+    content="$4"
 
+    if [ "$is_dir" = "true" ] && [ ! -z "$content" ]; then
+        echo -e "${BOLD_Red}Inner Error${ENDCOLOR}: Directory can't accept content." >&2
+        return 1
+    fi
+
+    chatrr -i $path
     if [ -f "$path" ]; then
         echo "Removing file: $path"
         sudo rm "$path"
@@ -34,6 +41,9 @@ change_owner_root() {
         echo "Create empty file: $path"
         sudo touch "$path"
     fi
+
+    echo "Add content..."
+    echo "$content" >>$path
 
     echo "Change access file $path"
     sudo chown root:root "$path" && sudo chmod "$access_number" "$path" && sudo chattr +i "$path"
@@ -72,19 +82,19 @@ exit_if_operation_failed "$?"
 #Creates .profile & Configs permission
 profile_file="$home_dir/.profile"
 echo_info "change_owner_root "$profile_file""
-change_owner_root "$profile_file" 644 "false" && echo "readonly PATH=$bin_dir" >>$profile
+change_owner_root "$profile_file" 644 "false" "readonly PATH=$bin_dir"
 exit_if_operation_failed "$?"
 
 #Creates .bashrc & Configs permission
 bashrc_file="$home_dir/.bashrc"
 echo_info "change_owner_root "$bashrc_file""
-change_owner_root "$bashrc_file" 644 "false"
+change_owner_root "$bashrc_file" 644 "false" ". $profile_file"
 exit_if_operation_failed "$?"
 
 #Creates .bash_profile & Configs permission
 bash_profile_file="$home_dir/.bash_profile"
 echo_info "change_owner_root "$bash_profile_file""
-change_owner_root "$bash_profile_file" 644 "false"
+change_owner_root "$bash_profile_file" 644 "false" ". $profile_file"
 exit_if_operation_failed "$?"
 
 echo ""
