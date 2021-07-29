@@ -1,5 +1,5 @@
 #Libs
-if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-get-homeDir.sh ] || [ ! -f /opt/shell-libs/password-enable.sh ]; then
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-get-homeDir.sh ] || [ ! -f /opt/shell-libs/password-enable.sh ] || [ ! -f /opt/shell-libs/user-logout-sessions.sh ]; then
     echo "Can't find libs." >&2
     echo "Operation failed." >&2
     exit 1
@@ -48,19 +48,8 @@ fi
 #============================================================================
 
 #log out active sessions
-user_sessions=$(pgrep -u $username)
-if [ ! -z "$user_sessions" ]; then
-    echo ""
-    printf "The user still login. do you want log out user? (y/n): "
-    read logOut_user
-    if [ "$logOut_user" = "y" ] || [ "$logOut_user" = "Y" ]; then
-        sudo killall -9 -u "$username"
-        exit_if_operation_failed "$?"
-    else
-        echo -e "$WARNING_COLORIZED: Operation canceled."
-        exit 0
-    fi
-fi
+/opt/shell-libs/user-logout-sessions.sh "$username"
+exit_if_operation_failed "$?"
 
 #lock user to prevent login again
 sudo passwd -l "$username"

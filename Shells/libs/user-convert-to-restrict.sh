@@ -1,5 +1,5 @@
 #Libs
-if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-add.sh ] || [ ! -f /opt/shell-libs/user-get-homeDir.sh ]; then
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-add.sh ] || [ ! -f /opt/shell-libs/user-get-homeDir.sh ] || [ ! -f /opt/shell-libs/user-logout-sessions.sh ]; then
     echo "Can't find libs." >&2
     echo "Operation failed." >&2
     exit 1
@@ -58,6 +58,9 @@ else
     username=$1
 fi
 
+/opt/shell-libs/user-logout-sessions.sh "$username" "y"
+exit_if_operation_failed "$?"
+
 echo_info "Change user bash ro rbash..."
 sudo usermod --shell /bin/rbash "$username"
 exit_if_operation_failed "$?"
@@ -96,6 +99,11 @@ bash_profile_file="$home_dir/.bash_profile"
 echo_info "change_owner_root "$bash_profile_file""
 change_owner_root "$bash_profile_file" 644 "false" ". $profile_file"
 exit_if_operation_failed "$?"
+
+if [ -f "$home_dir/.bash_logout" ]; then
+    echo_info "Removing .bash_logout..."
+    rm "$home_dir/.bash_logout"
+fi
 
 echo ""
 echo -e "${BOLD_GREEN}You can add command for $username with below command:${ENDCOLOR}"
