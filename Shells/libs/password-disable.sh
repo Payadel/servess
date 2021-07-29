@@ -14,6 +14,7 @@ if [ -z "$username" ]; then
 fi
 user_must_exist "$username"
 
+echo ""
 printf "Do you want disable $username password? (y/n): "
 read disable_password
 if [ "$disable_password" != "y" ] && [ "$disable_password" != "Y" ]; then

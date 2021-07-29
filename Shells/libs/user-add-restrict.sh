@@ -19,7 +19,7 @@ echo_info "Create user $username..."
 exit_if_operation_failed "$?"
 
 echo_info "Convert $username to restrict mode..."
-/opt/shell-libs/user-convert-to-restrict.sh
+/opt/shell-libs/user-convert-to-restrict.sh $username
 delete_user_if_operation_failed "$?"
 
 echo_success "Done"

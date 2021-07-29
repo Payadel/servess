@@ -57,6 +57,7 @@ if [ -z "$1" ]; then
 else
     username=$1
 fi
+user_must_exist "$username"
 
 /opt/shell-libs/user-logout-sessions.sh "$username" "y"
 exit_if_operation_failed "$?"
