@@ -16,7 +16,7 @@ else
 fi
 
 if [ ! -d "$deploy_shells_directory" ]; then
-    echo -e "$ERROR_COLORIZED: Directory is not exist." >&2
+    echo_error "Directory is not exist."
     exit 1
 fi
 

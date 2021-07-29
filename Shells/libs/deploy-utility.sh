@@ -21,13 +21,13 @@ installAndBuild() {
 
     cd "$dir" && sudo npm install
     if [ $? != 0 ]; then
-        echo -e "$ERROR_COLORIZED: Install failed." >&2
+        echo_error "Install failed."
         return 1
     fi
 
     cd "$dir" && sudo npm run build
     if [ $? != 0 ]; then
-        echo -e "$ERROR_COLORIZED: Build failed." >&2
+        echo_error "Build failed."
         return 1
     fi
 
@@ -45,7 +45,7 @@ cloneProject() {
     sudo git clone --branch "$branch" https://"$username":"$password""@github.com/$github_sub_url" "$path"
 
     if [ $? != 0 ]; then
-        echo -e "$ERROR_COLORIZED: Clone project failed." >&2
+        echo_error "Clone project failed."
         return 1
     fi
 }
@@ -67,7 +67,7 @@ getUpdatedProject() {
         if [ $? == 0 ]; then
             # Exit program when project already up to date.
             if [ "$pull_result" = "Already up to date." ]; then
-                echo -e "$OK_COLORIZED: Project already up to date."
+                echo_success "Project already up to date."
                 exit 0
             fi
 

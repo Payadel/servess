@@ -25,7 +25,7 @@ add_ssh_key="$7"
 
 is_user_exist=$(id "$username" 2>/dev/null)
 if [ "$?" = "0" ]; then
-    echo -e "$ERROR_COLORIZED: The user already exists." >&2
+    echo_error "The user already exists."
     exit 1
 fi
 

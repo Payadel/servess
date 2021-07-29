@@ -27,7 +27,7 @@ else
         echo_info "Importing gilab image..."
         cat $gitlab_image_path | docker import - gitlab/gitlab-ce
     else
-        echo -e "$ERROR_COLORIZED: Can not find any file." >&2
+        echo_error "Can not find any file."
         exit $?
     fi
 fi
@@ -111,7 +111,7 @@ if [ -z $use_ssl ] || [ $use_ssl == "y" ] || [ $use_ssl == "Y" ]; then
     read fullchain
 
     if [ ! -f $fullChain ]; then
-        echo -e "$ERROR_COLORIZED: Can not find ant file." >&2
+        echo_error "Can not find ant file."
         exit 1
     fi
 
@@ -119,7 +119,7 @@ if [ -z $use_ssl ] || [ $use_ssl == "y" ] || [ $use_ssl == "Y" ]; then
     read privkey
 
     if [ ! -f $privkey ]; then
-        echo -e "$ERROR_COLORIZED: Can not find ant file." >&2
+        echo_error "Can not find ant file."
         exit 1
     fi
 

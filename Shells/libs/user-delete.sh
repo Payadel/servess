@@ -18,23 +18,23 @@ fi
 #Check is user exist?
 is_user_exist "$username"
 if [ "$?" != "0" ]; then
-    echo -e "$ERROR_COLORIZED: The user does not exist." >&2
+    echo_error "The user does not exist."
     exit 1
 fi
 
 #Find user home dir
 homeDir=$(/opt/shell-libs/user-get-homeDir.sh "$username")
 if [ "$?" != 0 ] || [ -z "$homeDir" ]; then
-    echo -e "$ERROR_COLORIZED: Can't detect user home directory."
+    echo_error "Can't detect user home directory."
     printf "User home directory: "
     read homeDir
 
     if [ ! -d "$homeDir" ]; then
-        echo -e "$ERROR_COLORIZED: Invalid directory."
+        echo_error "Invalid directory."
         exit 1
     fi
 else
-    echo -e "$INFO_COLORIZED: User home directory detected: $homeDir"
+    echo_info "User home directory detected: $homeDir"
 fi
 
 ls -dlh "$homeDir"
@@ -42,7 +42,7 @@ echo -e "$WARNING_COLORIZED!"
 printf "Are you sure? (y/n): "
 read confirm_user_dir
 if [ "$confirm_user_dir" != "y" ] && [ "$confirm_user_dir" != "Y" ]; then
-    echo -e "$INFO_COLORIZED: Operation canceled."
+    echo_info "Operation canceled."
     exit 0
 fi
 #============================================================================
@@ -114,4 +114,4 @@ sudo systemctl restart ssh
 show_warning_if_operation_failed "$?"
 #=======================================================================
 
-echo -e "$DONE_COLORIZED"
+echo_success "Done"

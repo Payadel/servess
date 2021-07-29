@@ -32,7 +32,7 @@ run() {
 
     $execute_path $3 $4 $5 $6 $7 $8 $9
     if [ "$?" = 0 ]; then
-        echo -e "$DONE_COLORIZED"
+        echo_success "Done"
         echo "DONE." >>$statusFile
     else
         echo_skipped_operation

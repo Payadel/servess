@@ -10,12 +10,12 @@ fileOrDir_must_exist() {
     local path="$1"
     local type="$2"
     if [ "$type" != "d" ] && [ "$type" != "f" ]; then
-        echo -e "$ERROR_COLORIZED: input is not valid. type must be d for directory or f for file." >&2
+        echo_error "input is not valid. type must be d for directory or f for file." >&2
         exit 1
     fi
 
     if [ ! -$type $path ]; then
-        echo -e "$ERROR_COLORIZED: Can not find $path." >&2
+        echo_error "Can not find $path."
         exit 1
     fi
 }
@@ -29,7 +29,7 @@ proxy_must_valid() {
         read isProxyPassValid
 
         if [ "$isProxyPassValid" != "y" ] && [ "$isProxyPassValid" != "Y" ]; then
-            echo -e "${YELLOW}Operation canceled.${ENDCOLOR}"
+            echo_warning "Operation canceled."
             exit 0
         fi
         echo ""
@@ -102,7 +102,7 @@ else
     else
         if [ "$#" != 0 ]; then
             #Or all or none
-            echo -e "$ERROR_COLORIZED: Mismatch inputs." >&2
+            echo_error "Mismatch inputs."
             exit 1
         fi
 
@@ -170,7 +170,7 @@ if [ -f "$configFile_path" ]; then
     read replaceFile
 
     if [ "$replaceFile" != "y" ] && [ "$replaceFile" != "Y" ]; then
-        echo -e "$ERROR_COLORIZED: Operation canceled."
+        echo_error "Operation canceled."
         exit 0
     fi
 
@@ -227,7 +227,7 @@ sudo echo "$configFile_data" >>"$configFile_path"
 if [ $? == 0 ]; then
     echo_info "Create file $configFile_path successfull."
 else
-    echo -e "$ERROR_COLORIZED: Operation failed." >&2
+    echo_error "Operation failed."
     exit $?
 fi
 
@@ -243,7 +243,7 @@ sudo ln -s "$configFile_path" "$configFile_ln_path"
 if [ $? == 0 ]; then
     echo "Create ln file $configFile_ln_path successfull."
 else
-    echo -e "$ERROR_COLORIZED: Operation failed." >&2
+    echo_error "Operation failed."
 
     rollback_operations "$nginx_dir" "$server_name"
     exit $?
@@ -251,7 +251,7 @@ fi
 
 nginx -t
 if [ $? != 0 ]; then
-    echo -e "$ERROR_COLORIZED: Error in config file." >&2
+    echo_error "Error in config file."
 
     rollback_operations "$nginx_dir" "$server_name"
     exit $?
@@ -262,4 +262,4 @@ sudo systemctl restart nginx
 
 exit_if_operation_failed "$?" "$ERROR_COLORIZED: Error in config file!"
 
-echo -e "${BOLD_GREEN}Done${ENDCOLOR}"
+echo_success "Done"

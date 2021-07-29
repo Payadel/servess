@@ -107,5 +107,5 @@ if [ -f "$home_dir/.bash_logout" ]; then
 fi
 
 echo ""
-echo -e "${BOLD_GREEN}You can add command for $username with below command:${ENDCOLOR}"
+echo_success "You can add command for $username with below command:"
 echo "sudo ln -s /bin/*command* $bin_dir/"

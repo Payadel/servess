@@ -25,7 +25,7 @@ if [ "$input" == "y" ] || [ "$input" == "Y" ]; then
     #Check directory
     if [ ! -d "/etc/update-motd.d" ]; then
         echo "Directory /etc/update-motd.d isn't exist." >&2
-        echo -e "$ERROR_COLORIZED: Operation failed." >&2
+        echo_error "Operation failed."
         exit 1
     fi
 
