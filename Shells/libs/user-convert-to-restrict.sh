@@ -23,7 +23,7 @@ change_owner_root() {
         return 1
     fi
 
-    chatrr -i $path
+    chattr -i $path
     if [ -f "$path" ]; then
         echo "Removing file: $path"
         sudo rm "$path"
