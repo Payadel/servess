@@ -24,6 +24,13 @@ if [ -z "$username" ]; then
 fi
 user_must_exist "$username"
 
+printf "Do you want disable $username password? (y/n): "
+read disable_password
+if [ "$disable_password" != "y" ] && [ "$disable_password" != "Y" ]; then
+    echo_warning "Operation canceled."
+    exit 0
+fi
+
 servess sshd password --disabled-list --disable-password "$username"
 exit_if_operation_failed "$?"
 

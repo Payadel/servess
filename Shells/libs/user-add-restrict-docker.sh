@@ -1,5 +1,5 @@
 #Libs
-if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-ssh-access.sh ] || [ ! -f /opt/shell-libs/sshKey-config.sh ] || [ ! -f /opt/shell-libs/ip-current.sh ]; then
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-ssh-access.sh ] || [ ! -f /opt/shell-libs/sshKey-config.sh ] || [ ! -f /opt/shell-libs/ip-current.sh ] || [ ! -f /opt/shell-libs/password-disable.sh ]; then
     echo "Can't find libs." >&2
     echo "Operation failed." >&2
     exit 1
@@ -171,6 +171,9 @@ if [ "$add_ssh_key" = "y" ] || [ "$add_ssh_key" = "Y" ]; then
     /opt/shell-libs/sshKey-config.sh "$username"
     show_warning_if_operation_failed "$?"
 fi
+
+/opt/shell-libs/password-disable.sh "$username"
+show_warning_if_operation_failed "$?"
 
 echo_info "Enabling dcoker service..."
 sudo systemctl enable --now docker.service docker.socket

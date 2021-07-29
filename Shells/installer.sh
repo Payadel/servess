@@ -100,7 +100,10 @@ run "Update" /opt/shell-libs/update.sh
 #SSH-Key
 name=$(date +"%s")
 run "Backup sshd_config" /opt/shell-libs/backup.sh "/etc/ssh/sshd_config" "$backup_dir/etc/ssh/sshd_config" "$name-before"
+
 run "SSH Key config" /opt/shell-libs/sshKey-config.sh "root"
+/opt/shell-libs/password-disable.sh "root"
+
 run "Backup sshd_config" /opt/shell-libs/backup.sh "/etc/ssh/sshd_config" "$backup_dir/etc/ssh/sshd_config" "$name-updated"
 
 #curl

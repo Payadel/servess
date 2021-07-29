@@ -1,5 +1,5 @@
 #Libs
-if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-get-homeDir.sh ] || [ ! -f /opt/shell-libs/password-disable.sh ]; then
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-get-homeDir.sh ]; then
     echo "Can't find libs." >&2
     echo "Operation failed." >&2
     exit 1
@@ -80,12 +80,3 @@ exit_if_operation_failed "$?"
 
 sudo chown -R "$username:$username" "$ssh_dir" && sudo chmod 700 "$ssh_dir" && sudo chmod -R 600 "$file"
 exit_if_operation_failed "$?"
-
-echo ""
-printf "Do you want disable user password? (y/n): "
-read disable_password
-
-if [ "$disable_password" = "y" ] || [ "$disable_password" = "Y" ]; then
-    /opt/shell-libs/password-disable.sh "$username"
-    exit_if_operation_failed "$?"
-fi
