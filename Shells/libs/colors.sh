@@ -103,3 +103,7 @@ echo_warning() {
 echo_error() {
     echo -e "${ERROR_COLORIZED}: $1" >&2
 }
+
+echo_success() {
+    echo -e "${BOLD_GREEN}$1${ENDCOLOR}"
+}

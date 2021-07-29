@@ -41,8 +41,18 @@ echo_info "Create restrict user that supports docker (username: $username)..."
 exit_if_operation_failed "$?"
 
 #Set variables
-user_home_dir="/home/$username"
-user_bin_dir="$user_home_dir/bin"
+home_dir=$(/opt/shell-libs/user-get-homeDir.sh "$username")
+if [ "$?" != 0 ] || [ -z "$home_dir" ]; then
+    printf "User home directory: "
+    read home_dir
+
+    if [ ! -d "$home_dir" ]; then
+        echo_error "Invalid directory."
+        exit 1
+    fi
+fi
+
+user_bin_dir="$home_dir/bin"
 echo "============================================================="
 echo ""
 

@@ -18,11 +18,11 @@ change_owner_root() {
     is_dir=$3 #true/false
 
     if [ -f "$path" ]; then
-        echo "Remove file: $path"
+        echo "Removing file: $path"
         sudo rm "$path"
     else
         if [ -d "$path" ]; then
-            echo "Remove Directory: $path"
+            echo "Removing Directory: $path"
             sudo rm -r "$path"
         fi
     fi
@@ -52,16 +52,17 @@ fi
 
 #Checks
 if [ ! -f "/opt/shell-libs/user-add.sh" ]; then
-    echo -e "$ERROR_COLORIZED: Can not find user-add.sh library." >&2
+    echo_error "Can not find user-add.sh library."
     exit 1
 fi
 #================================================================================
 echo_info "Prepairing..."
 sudo apt install uidmap && sudo apt-get install -y docker-ce-rootless-extras
 exit_if_operation_failed "$?"
+
 sudo systemctl disable --now docker.service docker.socket
 
-echo -e "${INFO_COLORIZED}: Adding user ($username)..."
+echo_info "Adding user ($username)..."
 sudo /opt/shell-libs/user-add.sh "$username" "n" "n" "y" "n" "y" "n"
 exit_if_operation_failed "$?"
 echo "================================================================================"
@@ -80,39 +81,8 @@ echo_info "enable-linger..."
 sudo loginctl enable-linger "$username"
 exit_if_operation_failed "$?"
 
-echo_info "Change bash to rbash..."
-sudo usermod --shell /bin/rbash "$username"
-exit_if_operation_failed "$?"
-echo "================================================================================"
-echo ""
-
-home_dir="/home/$username"
-
-#Creates bin dir & Configs permission
-bin_dir="$home_dir/bin"
-echo "change_owner_root $bin_dir"
-change_owner_root "$bin_dir" 755 "true"
-exit_if_operation_failed "$?"
-
-#Creates .profile & Configs permission
-profile_file="$home_dir/.profile"
-echo "change_owner_root "$profile_file""
-change_owner_root "$profile_file" 644 "false"
-exit_if_operation_failed "$?"
-
-#Creates .bashrc & Configs permission
-bashrc_file="$home_dir/.bashrc"
-echo "change_owner_root "$bashrc_file""
-change_owner_root "$bashrc_file" 644 "false"
-exit_if_operation_failed "$?"
-
-#Creates .bash_profile & Configs permission
-bash_profile_file="$home_dir/.bash_profile"
-echo "change_owner_root "$bash_profile_file""
-change_owner_root "$bash_profile_file" 644 "false"
-exit_if_operation_failed "$?"
-echo "================================================================================"
-echo ""
+echo_info "Convert user to restrict mode..."
+/opt/shell-libs/user-convert-to-restrict.sh "$username"
 
 echo_info "Adds commands for user"
 sudo chattr -i "$bin_dir"
@@ -120,6 +90,7 @@ sudo ln -s /bin/docker "$bin_dir" && sudo ln -s /usr/local/bin/docker-compose "$
 exit_if_operation_failed "$?"
 
 sudo chattr +i "$bin_dir"
+show_warning_if_operation_failed "$?"
 
 echo "================================================================================"
 echo ""
@@ -140,7 +111,6 @@ shopt -s histappend
 HISTSIZE=1000
 HISTFILESIZE=2000
 
-readonly PATH=$bin_dir
 export DOCKER_HOST=unix:///run/user/$group_number/docker.sock" >>"$profile_file"
 exit_if_operation_failed "$?"
 
@@ -150,6 +120,7 @@ fi" | tee -a "$bash_profile_file" | tee -a "$bashrc_file"
 exit_if_operation_failed "$?"
 
 chattr +i "$profile_file" "$bash_profile_file" "$bashrc_file"
+show_warning_if_operation_failed "$?"
 
 #===============================================================================
 echo ""
