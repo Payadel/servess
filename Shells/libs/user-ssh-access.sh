@@ -21,8 +21,15 @@ if [ "$allow_ssh" = "y" ] || [ "$allow_ssh" = "Y" ]; then
         echo_info "Adding user to allow ssh access list..."
         servess sshd ssh-access --add-allow-user "$username" --list-allow-users
     fi
+    if [ ! -z "$denyUsers" ]; then
+        servess sshd ssh-access --remove-deny-user "$username" --list-deny-users
+    fi
 else
-    if [ ! -z "$denyUsers" ] || [ -z "$allowUsers" ]; then
+    if [ ! -z "$allowUsers" ]; then
+        echo_info "Adding user to allow ssh access list..."
+        servess sshd ssh-access --remove-allow-user "$username" --list-allow-users
+    fi
+    if [ ! -z "$denyUsers" ]; then
         echo_info "Adding user to deny ssh list..."
         servess sshd ssh-access --add-deny-user "$username" --list-deny-users
     fi
