@@ -89,8 +89,16 @@ config_nginx() {
         fi
     done
 
-    echo_info "Updating $nginx_dir/nginx.conf..."
+    nginx_config_file="$nginx_dir/nginx.conf"
+    mailu_config_title="#Mailu Config"
+    mailu_config_data=$(cat $nginx_config_file | grep $mailu_config_title)
+    if [ ! -z "$mailu_config_title" ]; then
+        return 0
+    fi
+
+    echo_info "Updating $nginx_config_file..."
     echo "
+$mailu_config_title
 stream
 {
     server
@@ -135,7 +143,7 @@ stream
             proxy_pass localhost:9930;
     }
 }
-" >>"$nginx_dir/nginx.conf"
+" >>"$nginx_config_file"
 }
 
 check_spf_dns_record() {
