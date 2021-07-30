@@ -75,3 +75,9 @@ user_must_exist() {
         exit "$?"
     fi
 }
+
+user_task() {
+    message="$1"
+    printf "Task: $message. Press enter to continue..."
+    read temp
+}

@@ -7,12 +7,6 @@ fi
 . /opt/shell-libs/colors.sh
 . /opt/shell-libs/utility.sh
 
-user_task() {
-    message="$1"
-    printf "Task: $message. Press enter to continue..."
-    read temp
-}
-
 copy_file() {
     local fileName="$1"
     local output="$2"
