@@ -1,5 +1,5 @@
 #Libs
-if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-add-restrict-docker.sh ] || [ ! -f /opt/shell-libs/user-get-homeDir.sh ] || [ ! -f /opt/shell-libs/nginx-add-app.sh ] || [ ! -f /opt/shell-libs/ip-current.sh ]; then
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-add-restrict-docker.sh ] || [ ! -f /opt/shell-libs/user-get-homeDir.sh ] || [ ! -f /opt/shell-libs/nginx-add-app.sh ] || [ ! -f /opt/shell-libs/ip-current.sh ] || [ ! -f /opt/shell-libs/ufw-mailu.sh ]; then
     echo "Can't find libs." >&2
     echo "Operation failed." >&2
     exit 1
@@ -42,32 +42,150 @@ port_must_free() {
     done
 }
 
+add_a_record_dns_task() {
+    user_task "Create A record DNS:     mail    Your IP address"
+    mail_ipAddress=$(nslookup -type=A "mail.$domain" | grep "Address:" | gawk -F: '{ print $2 }' | sed -n 2p)
+    if [ "$?" != 0 ] || [ -z "$mail_ipAddress" ]; then
+        echo_warning "We have trouble with DNS!"
+        user_task "Ensure DNS is correct."
+    else
+        echo_info "Looks good."
+    fi
+}
+
+add_mx_record_dns_task() {
+    user_task "Create MX record DNS:     @    mail.$domain"
+    mx_record=$(nslookup -type=MX "$domain" | grep $domain | grep mail.$domain)
+    if [ "$?" != 0 ] || [ -z "$mx_record" ]; then
+        echo_warning "We have trouble with MX DNS record"
+        user_task "Ensure DNS is correct."
+    else
+        echo_info "Looks good."
+    fi
+}
+
+ensure_ports_are_free() {
+    port_must_free "2500"
+    port_must_free "8081"
+    port_must_free "8443"
+    port_must_free "1100"
+    port_must_free "1430"
+    port_must_free "4650"
+    port_must_free "5870"
+    port_must_free "9930"
+    port_must_free "9950"
+}
+
+config_nginx() {
+    nginx_dir="/etc/nginx"
+
+    while true; do
+        if [ ! -d "$nginx_dir" ]; then
+            echo_error "Can not find nginx directory in $nginx_dir"
+            printf "Input nginx directory path: "
+            read nginx_dir
+        else
+            break
+        fi
+    done
+
+    echo_info "Updating $nginx_dir/nginx.conf..."
+    echo "
+stream
+{
+    server
+    {
+            listen 25;
+            proxy_pass localhost:2500;
+    }
+
+    server
+    {
+            listen 465;
+            proxy_pass localhost:4650;
+    }
+
+    server
+    {
+            listen 587;
+            proxy_pass localhost:5870;
+    }
+
+    server
+    {
+            listen 110;
+            proxy_pass localhost:1100;
+    }
+
+	server
+    {
+            listen 995;
+            proxy_pass localhost:9950;
+    }
+
+	server
+    {
+            listen 143;
+            proxy_pass localhost:1430;
+    }
+
+	server
+    {
+            listen 993;
+            proxy_pass localhost:9930;
+    }
+}
+" >>"$nginx_dir/nginx.conf"
+}
+
+check_spf_dns_record() {
+    echo_info "Cheching SPF record..."
+    spf_record=$(nslookup -type=txt "$domain" | grep $domain | grep v=spf)
+    if [ "$?" != 0 ] || [ -z "$spf_record" ]; then
+        echo_warning "We have trouble with SPF DNS record"
+        user_task "Ensure DNS is correct."
+    else
+        echo_info "Looks good."
+    fi
+}
+
+check_dkim_dns_record() {
+    echo_info "Cheching DKIM record..."
+    dkim_record=$(nslookup -type=txt dkim._domainkey.$domain | grep dkim._domainkey.$domain)
+    if [ "$?" != 0 ] || [ -z "$dkim_record" ]; then
+        echo_warning "We have trouble with DKIM DNS record"
+        user_task "Ensure DNS is correct."
+    else
+        echo_info "Looks good."
+    fi
+}
+
+check_dmarc_dns_record() {
+    echo_info "Cheching DMARC record..."
+    dmarc_record=$(nslookup -type=txt _dmarc.$domain | grep _dmarc.$domain)
+    if [ "$?" != 0 ] || [ -z "$dmarc_record" ]; then
+        echo_warning "We have trouble with DMARC DNS record"
+        user_task "Ensure DNS is correct."
+    else
+        echo_info "Looks good."
+    fi
+}
+
 printf "Your domain (like example.com): "
 read domain
 
-user_task "Create A record DNS:     mail    Your IP address"
-mail_ipAddress=$(nslookup -type=A "mail.$domain" | grep "Address:" | gawk -F: '{ print $2 }' | sed -n 2p)
-if [ "$?" != 0 ] || [ -z "$mail_ipAddress" ]; then
-    echo_warning "We have trouble with DNS!"
-    user_task "Ensure DNS is correct."
-else
-    echo_info "Looks good."
-fi
+add_a_record_dns_task
 echo ""
 
-user_task "Create MX record DNS:     @    mail.$domain"
-mx_record=$(nslookup -type=MX "$domain" | grep $domain | grep mail.$domain)
-if [ "$?" != 0 ] || [ -z "$mx_record" ]; then
-    echo_warning "We have trouble with MX DNS record"
-    user_task "Ensure DNS is correct."
-else
-    echo_info "Looks good."
-fi
+add_mx_record_dns_task
 echo ""
+
+#Check ports
+ensure_ports_are_free
 
 #Config firewall
 echo_info "Config firewall..."
-sudo ufw allow 25,80,443,110,143,465,587,993,995/tcp
+/opt/shell-libs/ufw-mailu.sh "enable"
 exit_if_operation_failed "$?"
 echo ""
 
@@ -133,19 +251,8 @@ copy_file "fullchain.pem" "$homeDir/mailu/certs/cert.pem" "$username"
 show_warning_if_operation_failed "$?"
 echo ""
 
-#Check ports
-port_must_free "25"
-port_must_free "8081"
-port_must_free "8443"
-port_must_free "110"
-port_must_free "143"
-port_must_free "465"
-port_must_free "587"
-port_must_free "993"
-port_must_free "995"
-
-echo_info "For user can listen on ports < 1024, adding net.ipv4.ip_unprivileged_port_start=25 to sysctl.conf..."
-sudo echo "net.ipv4.ip_unprivileged_port_start=25" >>/etc/sysctl.conf
+#Config nginx
+config_nginx
 exit_if_operation_failed "$?"
 echo ""
 
@@ -193,36 +300,15 @@ user_task "Change admin password if is necessary."
 echo ""
 
 #SPF
-echo_info "Cheching SPF record..."
-spf_record=$(nslookup -type=txt "$domain" | grep $domain | grep v=spf)
-if [ "$?" != 0 ] || [ -z "$spf_record" ]; then
-    echo_warning "We have trouble with SPF DNS record"
-    user_task "Ensure DNS is correct."
-else
-    echo_info "Looks good."
-fi
+check_spf_dns_record
 echo ""
 
 #DKIM
-echo_info "Cheching DKIM record..."
-dkim_record=$(nslookup -type=txt dkim._domainkey.$domain | grep dkim._domainkey.$domain)
-if [ "$?" != 0 ] || [ -z "$dkim_record" ]; then
-    echo_warning "We have trouble with DKIM DNS record"
-    user_task "Ensure DNS is correct."
-else
-    echo_info "Looks good."
-fi
+check_dkim_dns_record
 echo ""
 
 #DMARC
-echo_info "Cheching DMARC record..."
-dmarc_record=$(nslookup -type=txt _dmarc.$domain | grep _dmarc.$domain)
-if [ "$?" != 0 ] || [ -z "$dmarc_record" ]; then
-    echo_warning "We have trouble with DMARC DNS record"
-    user_task "Ensure DNS is correct."
-else
-    echo_info "Looks good."
-fi
+check_dmarc_dns_record
 echo ""
 
 user_task "You can check email with https://mxtoolbox.com/deliverability/"

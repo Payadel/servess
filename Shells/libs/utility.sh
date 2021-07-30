@@ -32,6 +32,19 @@ show_warning_if_operation_failed() {
     fi
 }
 
+show_error_if_operation_failed() {
+    local code="$1"
+    local message="$2"
+
+    if [ "$code" != "0" ]; then
+        if [ ! -z "$message" ]; then
+            echo -e "$message" >&2
+        else
+            echo_error "Operation failed with code $code."
+        fi
+    fi
+}
+
 is_user_exist() {
     local username="$1"
 
