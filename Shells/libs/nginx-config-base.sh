@@ -22,7 +22,11 @@ done
 nginx_config_file="$nginx_dir/nginx.conf"
 
 remove_old_tls() {
-    if [ ! -z $(cat "$nginx_config_file" | grep "TLSv1") ] || [ ! -z $(cat "$nginx_config_file" | grep "TLSv1.1") ] || [ ! -z $(cat "$nginx_config_file" | grep "TLSv1.2") ]; then
+    tls_1=$(cat "$nginx_config_file" | grep "TLSv1")
+    tls_1_1=$(cat "$nginx_config_file" | grep "TLSv1.1")
+    tls_1_2=$(cat "$nginx_config_file" | grep "TLSv1.2")
+
+    if [ ! -z "$tls_1" ] || [ ! -z "$tls_1_1" ] || [ ! -z "$tls_1_2" ]; then
         user_task "Remove old TLS versions like TLSv1, TLSv1.1 TLSv1.2"
     fi
 }
