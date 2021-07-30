@@ -141,3 +141,5 @@ run "Base Configs" /opt/shell-libs/baseConfig.sh
 
 #Backup
 run "Create Timeshift Backup" /opt/shell-libs/timeshift-createBackup.sh "Base apps is installed"
+
+run "Config nginx" /opt/shell-libs/nginx-config-base.sh

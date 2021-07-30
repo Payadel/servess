@@ -78,6 +78,6 @@ user_must_exist() {
 
 user_task() {
     message="$1"
-    printf "Task: $message. Press enter to continue..."
+    printf "Task: $message Press enter to continue..."
     read temp
 }
