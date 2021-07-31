@@ -57,5 +57,5 @@ fi
 printf "Do you want see users-docker-service-checks in system welcome messages? (y/n): "
 read input
 if [ "$input" == "y" ] || [ "$input" == "Y" ]; then
-    /opt/shell-libs/motd-add.sh "/opt/shell-libs/users-docker-services-check.sh"
+    /opt/shell-libs/motd-add.sh "/opt/shell-libs" "users-docker-services-check.sh"
 fi

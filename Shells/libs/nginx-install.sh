@@ -15,5 +15,5 @@ exit_if_operation_failed "$?"
 printf "Do you want see service checks in system welcome messages? (y/n): "
 read input
 if [ "$input" == "y" ] || [ "$input" == "Y" ]; then
-    /opt/shell-libs/motd-add.sh "/opt/shell-libs/nginx-services-check.sh"
+    /opt/shell-libs/motd-add.sh "/opt/shell-libs" "nginx-services-check.sh"
 fi
