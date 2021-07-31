@@ -1,4 +1,4 @@
-if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/motd-add.sh ]; then
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/motd-add.sh ] || [ ! -f /opt/shell-libs/nginx-services-check.sh ]; then
     echo "Can't find libs" >&2
     echo "Operation failed." >&2
     exit 1
@@ -14,7 +14,6 @@ exit_if_operation_failed "$?"
 
 printf "Do you want see service checks in system welcome messages? (y/n): "
 read input
-
 if [ "$input" == "y" ] || [ "$input" == "Y" ]; then
     /opt/shell-libs/motd-add.sh "/opt/shell-libs/nginx-services-check.sh"
 fi

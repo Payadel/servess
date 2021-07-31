@@ -1,5 +1,5 @@
 #Libs
-if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ]; then
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/motd-add.sh ] || [ ! -f /opt/shell-libs/users-docker-services-check.sh ]; then
     echo "Can't find libs." >&2
     echo "Operation failed." >&2
     exit 1
@@ -52,4 +52,10 @@ if [ "$ssh_connection_timeout" = "y" ] || [ "$ssh_connection_timeout" = "Y" ]; t
 
     servess sshd connection-timeout --interval "$ClientAliveInterval" --count-max "$ClientAliveCountMax"
     show_warning_if_operation_failed "$?"
+fi
+
+printf "Do you want see users-docker-service-checks in system welcome messages? (y/n): "
+read input
+if [ "$input" == "y" ] || [ "$input" == "Y" ]; then
+    /opt/shell-libs/motd-add.sh "/opt/shell-libs/users-docker-services-check.sh"
 fi
