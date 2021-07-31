@@ -126,6 +126,13 @@ fi
 /opt/shell-libs/password-disable.sh "$username"
 show_warning_if_operation_failed "$?"
 
-echo_info "Enabling dcoker service..."
-sudo systemctl enable --now docker.service docker.socket
-show_warning_if_operation_failed "$?"
+echo ""
+printf "Enable docker service for $(whoami)?"
+read enable_service
+if [ "$enable_service" = "y" ] || [ "$enable_service" = "Y" ]; then
+    echo_info "Enabling dcoker service..."
+    sudo systemctl enable --now docker.service docker.socket
+    show_warning_if_operation_failed "$?"
+fi
+
+echo_success "Done"
