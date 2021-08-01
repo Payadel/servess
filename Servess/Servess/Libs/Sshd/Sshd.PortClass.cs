@@ -67,7 +67,7 @@ namespace Servess.Libs.Sshd {
                     return Utility.AddOrUpdateKeyValue(lines, PortKey, Port.ToString()!, Separator, CommentSign)
                         .OnSuccess(newLines => FirewallUtility.AllowPort((int) Port)
                             .TryOnSuccess(() => File.WriteAllLines(path, newLines))
-                            .OnSuccess(() => MethodResult<string>.Ok("Done")));
+                            .OnSuccess(() => MethodResult<string>.Ok($"Port changed to {Port}")));
                 });
             }
         }
