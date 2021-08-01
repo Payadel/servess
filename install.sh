@@ -12,6 +12,28 @@ exit_if_operation_failed() {
   fi
 }
 
+delete_dir_or_file() {
+  local input="$1"
+
+  if [ -d "$input" ]; then
+    echo "Directory $input is exist."
+    printf "Do you want delete it? (y/n): "
+    read -r delete_input
+    if [ "$delete_input" = "y" ] || [ "$delete_input" = "Y" ]; then
+      rm -r "$input"
+    fi
+  fi
+
+  if [ -f "$input" ]; then
+    echo "File $input is exist."
+    printf "Do you want delete it? (y/n): "
+    read -r delete_input
+    if [ "$delete_input" = "y" ] || [ "$delete_input" = "Y" ]; then
+      rm "$input"
+    fi
+  fi
+}
+
 name=Servess
 cliName=servess
 install_dir="/opt"
@@ -24,10 +46,12 @@ sudo apt install -y git-all
 exit_if_operation_failed "$?"
 
 echo "Cloning project..."
+delete_dir_or_file "$name"
 git clone https://github.com/HamidMolareza/$name.git
 exit_if_operation_failed "$?"
 
 echo "Installing shell libs..."
+delete_dir_or_file "$libs_dir"
 sudo mkdir -p "$libs_dir" && sudo cp $name/Shells/libs/* "$libs_dir/" && sudo chmod -R 750 "$libs_dir/"
 exit_if_operation_failed "$?"
 
@@ -43,6 +67,7 @@ exit_if_operation_failed "$?"
 echo "Installing $cliName..."
 
 echo "Building project..."
+delete_dir_or_file "$install_servess_dir"
 sudo mkdir -p "$install_servess_dir" && sudo chmod 750 "$install_servess_dir"
 exit_if_operation_failed "$?"
 
@@ -54,6 +79,7 @@ sudo chmod 750 "$install_servess_dir/$cliName"
 exit_if_operation_failed "$?"
 
 echo "Adds file to bin dir..."
+delete_dir_or_file "$bin_path"
 sudo ln -s "$install_servess_dir/$cliName" "$bin_path"
 exit_if_operation_failed "$?"
 
