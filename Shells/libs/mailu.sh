@@ -317,6 +317,10 @@ if [ "$?" != 0 ]; then
   read -r ssh_port
 fi
 
+echo_info "Add $username to allow ssh list for ssh access.."
+echo_warning "Disable ssh access later if you want."
+servess sshd ssh-access -aa "$username"
+
 echo "ssh -t -p $ssh_port ""$username"@"$server_ip"""
 ssh -t -p "$ssh_port" "$username@$server_ip" "$restart_docker_shell; exit"
 exit_if_operation_failed "$?"
