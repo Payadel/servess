@@ -182,15 +182,6 @@ check_dmarc_dns_record() {
   fi
 }
 
-exit_if_file_not_exist() {
-  local file="$1"
-
-  if [ ! -f "$file" ]; then
-    echo_error "File $file not found."
-    exit 1
-  fi
-}
-
 domain="$1"
 if [ -z "$domain" ]; then
   printf "Your domain (like example.com): "
@@ -199,18 +190,10 @@ fi
 
 username="$2"
 admin_password="$3"
-
 docker_compose_file="$4"
-exit_if_file_not_exist "$docker_compose_file"
-
 mailu_env_file="$5"
-exit_if_file_not_exist "$mailu_env_file"
-
 privateKey_file="$6"
-exit_if_file_not_exist "$privateKey_file"
-
 fullchain_file="$7"
-exit_if_file_not_exist "$fullchain_files"
 
 add_a_record_dns_task
 echo ""
@@ -255,14 +238,14 @@ echo ""
 user_task "Go to https://setup.mailu.io/ and download setup files if haven't those files."
 echo ""
 
-if [ -z "$docker_compose_file" ]; then
+if [ -z "$docker_compose_file" ] || [ ! -f "$docker_compose_file" ]; then
   get_and_copy_file "docker-compose" "$homeDir/" "$username"
 else
   copy_file "$docker_compose_file" "$homeDir/" "$username"
 fi
 delete_user_if_operation_failed "$?"
 
-if [ -z "$mailu_env_file" ]; then
+if [ -z "$mailu_env_file" ] || [ ! -f "$mailu_env_file" ]; then
   get_and_copy_file "mailu.env" "$homeDir/" "$username"
 else
   copy_file "$mailu_env_file" "$homeDir/" "$username"
@@ -301,14 +284,14 @@ mkdir -p "$homeDir/mailu/certs" && sudo chown "$username:$username" "$homeDir/ma
 show_warning_if_operation_failed "$?"
 
 #Copy cert files:
-if [ -z "$privateKey_file" ]; then
+if [ -z "$privateKey_file" ] || [ ! -f "$privateKey_file" ]; then
   get_and_copy_file "privkey.pem" "$homeDir/mailu/certs/key.pem" "$username"
 else
   copy_file "$privateKey_file" "$homeDir/mailu/certs/key.pem" "$username"
 fi
 show_warning_if_operation_failed "$?"
 
-if [ -z "$fullchain_file" ]; then
+if [ -z "$fullchain_file" ] || [ ! -f "$fullchain_file" ]; then
   get_and_copy_file "fullchain.pem" "$homeDir/mailu/certs/cert.pem" "$username"
 else
   copy_file "$fullchain_file" "$homeDir/mailu/certs/cert.pem" "$username"
