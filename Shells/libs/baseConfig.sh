@@ -1,5 +1,5 @@
 #Libs
-if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/motd-add.sh ] || [ ! -f /opt/shell-libs/users-docker-services-check.sh ]; then
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/motd-add.sh ] || [ ! -f /opt/shell-libs/users-docker-services-check.sh ] || [ ! -f /opt/shell-libs/ssh-port-change.sh ]; then
     echo "Can't find libs." >&2
     echo "Operation failed." >&2
     exit 1
@@ -58,4 +58,10 @@ printf "Do you want see users-docker-service-checks in system welcome messages? 
 read input
 if [ "$input" == "y" ] || [ "$input" == "Y" ]; then
     /opt/shell-libs/motd-add.sh "/opt/shell-libs" "users-docker-services-check.sh"
+fi
+
+printf "Do you want change ssh port? (y/n): "
+read input
+if [ "$input" == "y" ] || [ "$input" == "Y" ]; then
+    /opt/shell-libs/ssh-port-change.sh
 fi
