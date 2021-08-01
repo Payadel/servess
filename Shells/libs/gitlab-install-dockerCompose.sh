@@ -1,9 +1,3 @@
-if [ ! -f /opt/shell-libs/selectEditor.sh ]; then
-  echo "Can not find library files." >&2
-  exit 1
-fi
-. /opt/shell-libs/selectEditor.sh
-
 if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ]; then
   echo "Can't find libs." >&2
   echo "Operation failed." >&2
@@ -85,7 +79,7 @@ cd "$compose_dir" && echo "web:
 
 exit_if_operation_failed "$?"
 
-cd "$compose_dir" && $editor $docker_filename
+cd "$compose_dir" && nano $docker_filename
 #========================================================================
 #Run gitlab compose file
 echo_info "Run gitlab compose file..."
@@ -174,7 +168,7 @@ else
 fi
 exit_if_operation_failed "$?"
 
-$editor "$config_file"
+nano "$config_file"
 
 sudo ln -s "$config_file" "$nginx_dir/sites-enabled/"
 sudo nginx -t

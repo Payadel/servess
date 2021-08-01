@@ -1,11 +1,3 @@
-if [ ! -f /opt/shell-libs/selectEditor.sh ]; then
-  echo "Can not find library files." >&2
-  exit 1
-fi
-. /opt/shell-libs/selectEditor.sh
-
-editor=($getEditor "$1")
-
 gitlab_setting_file=/etc/gitlab/gitlab.rb
 gitlab_ssl_dir=/etc/gitlab/ssl
 install_status_file=~/gitlab_install_status
@@ -78,7 +70,7 @@ echo "========================================================================"
 echo "========================================================================"
 echo "========================================================================"
 
-sudo $editor $gitlab_setting_file
+sudo nano $gitlab_setting_file
 
 log "Reconfigure..."
 sudo gitlab-ctl reconfigure

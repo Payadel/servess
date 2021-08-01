@@ -89,7 +89,7 @@ editor="nano"
 #Dns:
 backup_name=$(date +"%s")
 run "Backup dns" /opt/shell-libs/backup.sh "/etc/netplan/01-netcfg.yaml" "$backup_dir/etc/netplan" "$backup_name-before"
-run "Dns" /opt/shell-libs/dns-change.sh "$editor"
+run "Dns" /opt/shell-libs/dns-change.sh
 run "Backup dns" /opt/shell-libs/backup.sh "/etc/netplan/01-netcfg.yaml" "$backup_dir/etc/netplan" "$backup_name-updated"
 
 #Update
@@ -132,8 +132,8 @@ run "install docker" /opt/shell-libs/docker-install.sh
 run "install docker compose" /opt/shell-libs/docker-compose-install.sh
 
 #Gitlab
-# run "install Gitlab with docker compose" /opt/shell-libs/gitlab-install-dockerCompose.sh $editor
-# run "install Gitlab" /opt/shell-libs/gitlab-install.sh $editor
+# run "install Gitlab with docker compose" /opt/shell-libs/gitlab-install-dockerCompose.sh
+# run "install Gitlab" /opt/shell-libs/gitlab-install.shs
 
 run "Base Configs" /opt/shell-libs/baseConfig.sh
 
