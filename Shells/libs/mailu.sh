@@ -1,5 +1,5 @@
 #Libs
-if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-add-restrict-docker.sh ] || [ ! -f /opt/shell-libs/user-get-homeDir.sh ] || [ ! -f /opt/shell-libs/nginx-add-app.sh ] || [ ! -f /opt/shell-libs/ip-current.sh ] || [ ! -f /opt/shell-libs/ufw-mailu.sh ] || [ ! -f /opt/shell-libs/password-generate.sh ] || [ ! -f /opt/shell-libs/user-group-number.sh ]; then
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-add-restrict-docker.sh ] || [ ! -f /opt/shell-libs/user-get-homeDir.sh ] || [ ! -f /opt/shell-libs/nginx-add-app.sh ] || [ ! -f /opt/shell-libs/ip-current.sh ] || [ ! -f /opt/shell-libs/ufw-mailu.sh ] || [ ! -f /opt/shell-libs/password-generate.sh ] || [ ! -f /opt/shell-libs/user-group-number.sh ] || [ ! -f /opt/shell-libs/user-config.sh ]; then
   echo "Can't find libs." >&2
   echo "Operation failed." >&2
   exit 1
@@ -268,7 +268,20 @@ exit_if_operation_failed "$?"
 echo ""
 
 echo_info "Running containers with docker-compose..."
-"$homeDir"/.sudo/"$restart_docker_shell"
+
+echo_info "Get server ip..."
+server_ip="$(/opt/shell-libs/ip-current.sh)"
+
+#Get Current Port
+ssh_port=$(/opt/shell-libs/ssh-port-current.sh)
+if [ "$?" != 0 ]; then
+  echo_error "Can not detect ssh port."
+  printf "SSH Port: "
+  read -r ssh_port
+fi
+
+echo "ssh -t -p $ssh_port ""$username"@"$server_ip"""
+ssh -t -p "$ssh_port" "$username@$server_ip" "$restart_docker_shell; exit"
 exit_if_operation_failed "$?"
 
 echo_info "Sleep 25s to ensure all containers are run..."
@@ -287,6 +300,9 @@ echo_info "dcoker-compose up..."
 sudo docker-compose --host unix:///run/user/$group_number/docker.sock -p mailu exec admin flask mailu admin admin $domain $admin_password
 show_warning_if_operation_failed "$?"
 echo ""
+
+echo_info "Config user..."
+/opt/shell-libs/user-config.sh
 
 echo_info "Config nginx..."
 /opt/shell-libs/nginx-add-app.sh "mail.$domain" "/var/log/nginx" "https://localhost:8443" "/etc/nginx"

@@ -15,7 +15,7 @@ else
 fi
 
 echo_info "Create user $username..."
-/opt/shell-libs/user-add.sh "$username" "n" "n" "y" "n"
+/opt/shell-libs/user-add.sh "$username"
 exit_if_operation_failed "$?"
 
 echo_info "Convert $username to restrict mode..."

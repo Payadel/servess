@@ -1,5 +1,5 @@
 #Libs
-if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-ssh-access.sh ] || [ ! -f /opt/shell-libs/sshKey-config.sh ] || [ ! -f /opt/shell-libs/ip-current.sh ] || [ ! -f /opt/shell-libs/password-disable.sh ] || [ ! -f /opt/shell-libs/ssh-port-current.sh ] || [ ! -f /opt/shell-libs/user-group-number.sh ]; then
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/ip-current.sh ] || [ ! -f /opt/shell-libs/ssh-port-current.sh ] || [ ! -f /opt/shell-libs/user-group-number.sh ]; then
   echo "Can't find libs." >&2
   echo "Operation failed." >&2
   exit 1
@@ -16,10 +16,7 @@ else
 fi
 
 loginToDocker="$2"
-allow_ssh="$3"
-add_ssh_key="$4"
-disable_password="$5"
-enable_service="$6"
+enable_service="$3"
 #================================================================================
 
 #Checks
@@ -35,7 +32,7 @@ exit_if_operation_failed "$?"
 sudo systemctl disable --now docker.service docker.socket
 
 echo_info "Adding user ($username)..."
-sudo /opt/shell-libs/user-add.sh "$username" "n" "n" "y" "n" "y" "n" "n"
+sudo /opt/shell-libs/user-add.sh "$username"
 exit_if_operation_failed "$?"
 echo "================================================================================"
 echo ""
@@ -125,23 +122,6 @@ fi
 if [ "$loginToDocker" = "y" ] || [ "$loginToDocker" = "Y" ]; then
   ssh -t -p "$ssh_port" "$username@$server_ip" "docker login; exit"
 fi
-
-#SSH Access
-/opt/shell-libs/user-ssh-access.sh "$username" "$allow_ssh"
-show_warning_if_operation_failed "$?"
-
-#SSH Key
-if [ -z "$add_ssh_key" ]; then
-  printf "Do you want add ssh key? (y/n): "
-  read -r add_ssh_key
-fi
-if [ "$add_ssh_key" = "y" ] || [ "$add_ssh_key" = "Y" ]; then
-  /opt/shell-libs/sshKey-config.sh "$username"
-  show_warning_if_operation_failed "$?"
-fi
-
-/opt/shell-libs/password-disable.sh "$username" "$disable_password"
-show_warning_if_operation_failed "$?"
 
 if [ -z "$enable_service" ]; then
   echo ""
