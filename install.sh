@@ -31,7 +31,7 @@ echo "Installing shell libs..."
 sudo mkdir -p "$libs_dir" && sudo cp $name/Shells/libs/* "$libs_dir/" && sudo chmod -R 750 "$libs_dir/"
 exit_if_operation_failed "$?"
 
-sudo cp name/Shells/installer.sh "$libs_dir/" && sudo chmod 750 "$libs_dir/installer.sh"
+sudo cp $name/Shells/installer.sh "$libs_dir/" && sudo chmod 750 "$libs_dir/installer.sh"
 exit_if_operation_failed "$?"
 
 #Servess
