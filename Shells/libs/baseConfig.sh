@@ -1,5 +1,5 @@
 #Libs
-if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/motd-add.sh ] || [ ! -f /opt/shell-libs/users-docker-services-check.sh ] || [ ! -f /opt/shell-libs/ssh-port-change.sh ]; then
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/motd-add.sh ] || [ ! -f /opt/shell-libs/users-docker-services-check.sh ] || [ ! -f /opt/shell-libs/ssh-port-change.sh ] || [ ! -f /opt/shell-libs/password-generate.sh ]; then
     echo "Can't find libs." >&2
     echo "Operation failed." >&2
     exit 1
@@ -64,4 +64,11 @@ printf "Do you want change ssh port? (y/n): "
 read input
 if [ "$input" == "y" ] || [ "$input" == "Y" ]; then
     /opt/shell-libs/ssh-port-change.sh
+fi
+
+printf "Do you want change $(whoami) password? (y/n): "
+read input
+if [ "$input" == "y" ] || [ "$input" == "Y" ]; then
+    /opt/shell-libs/password-generate.sh
+    sudo passwd $(whoami)
 fi
