@@ -16,7 +16,7 @@ namespace Servess.Libs.Sshd {
             [Input("port", "po",
                 "Port Number", nameof(Port), isRequired: false, hasValue: true)]
             public int? Port { get; set; }
-            
+
             [Input("show-current-port", "cp",
                 "Show Current Port Number", nameof(ShowCurrentPort), isRequired: false, hasValue: false)]
             public bool? ShowCurrentPort { get; set; }
@@ -26,11 +26,11 @@ namespace Servess.Libs.Sshd {
             private const string PortKey = "Port";
 
             [Operator]
-            public MethodResult<string> Operation() {
+            public MethodResult<string?> Operation() {
                 var path = Path ?? ConfigFilePath;
 
                 if (!File.Exists(path)) {
-                    return MethodResult<string>.Fail(new NotFoundError(title: "File Not Found",
+                    return MethodResult<string?>.Fail(new NotFoundError(title: "File Not Found",
                         message: $"Can't find {path}"));
                 }
 
@@ -42,8 +42,9 @@ namespace Servess.Libs.Sshd {
                         .OnSuccess(index => Utility.GetValue(lines[index], PortKey, Separator, CommentSign))
                         .TryOnSuccess(Convert.ToInt32);
                     if (!currentPortMethodResult.IsSuccess) {
-                        return MethodResult<string>.Fail(currentPortMethodResult.Detail);
+                        return MethodResult<string?>.Fail(currentPortMethodResult.Detail);
                     }
+
                     var currentPort = currentPortMethodResult.Value;
 
                     if (ShowCurrentPort is not null) {
@@ -51,23 +52,23 @@ namespace Servess.Libs.Sshd {
                     }
 
                     if (Port is null) {
-                        return MethodResult<string>.Ok("Done");
+                        return MethodResult<string?>.Ok(null);
                     }
-                    
+
                     if (currentPort == Port) {
-                        return MethodResult<string>.Ok($"Duplicate port. No change. ({currentPort})");
+                        return MethodResult<string?>.Ok($"Duplicate port. No change. ({currentPort})");
                     }
 
                     var checkPortResult = Utility.ExecuteBashCommand($"sudo lsof -i:{Port}");
                     if (!string.IsNullOrEmpty(checkPortResult)) {
-                        return MethodResult<string>.Fail(
+                        return MethodResult<string?>.Fail(
                             new BadRequestError(message: $"Port is not free.\n{checkPortResult}"));
                     }
 
                     return Utility.AddOrUpdateKeyValue(lines, PortKey, Port.ToString()!, Separator, CommentSign)
                         .OnSuccess(newLines => FirewallUtility.AllowPort((int) Port)
                             .TryOnSuccess(() => File.WriteAllLines(path, newLines))
-                            .OnSuccess(() => MethodResult<string>.Ok($"Port changed to {Port}")));
+                            .OnSuccess(() => MethodResult<string?>.Ok($"Port changed to {Port}")));
                 });
             }
         }
