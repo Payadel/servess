@@ -21,7 +21,7 @@ libs_dir="$install_dir/shell-libs"
 
 echo "Install git..."
 sudo apt install -y git-all
-
+exit_if_operation_failed "$?"
 
 echo "Cloning project..."
 git clone https://github.com/HamidMolareza/$name.git
@@ -50,7 +50,7 @@ sudo chmod 750 $name/$name/publish.sh && ($name/$name/publish.sh "$install_serve
 exit_if_operation_failed "$?"
 
 echo "Adds execute access..."
-cd $install_servess_dir && sudo chmod 750 "$cliName"
+sudo chmod 750 "$install_servess_dir/$cliName"
 exit_if_operation_failed "$?"
 
 echo "Adds file to bin dir..."
