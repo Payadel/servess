@@ -223,12 +223,12 @@ server {
 "
 
 sudo echo "$configFile_data" >>"$configFile_path"
-
-if [ $? == 0 ]; then
+code="$?"
+if [ "$code" == 0 ]; then
   echo_info "Create file $configFile_path successfull."
 else
   echo_error "Operation failed."
-  exit $?
+  exit $code
 fi
 
 configFile_ln_path="$nginx_dir/sites-enabled/$server_name"
@@ -240,26 +240,18 @@ if [ -f "$configFile_ln_path" ]; then
 fi
 
 sudo ln -s "$configFile_path" "$configFile_ln_path"
-if [ $? == 0 ]; then
+code="$?"
+if [ "$code" == 0 ]; then
   echo "Create ln file $configFile_ln_path successfull."
 else
   echo_error "Operation failed."
 
   rollback_operations "$nginx_dir" "$server_name"
-  exit $?
-fi
-
-nginx -t
-if [ $? != 0 ]; then
-  echo_error "Error in config file."
-
-  rollback_operations "$nginx_dir" "$server_name"
-  exit $?
+  exit $code
 fi
 
 echo_info "Restart nginx service..."
-sudo systemctl restart nginx
-
-exit_if_operation_failed "$?" "$ERROR_COLORIZED: Error in config file!"
+/opt/shell-libs/nginx-restart.sh
+exit_if_operation_failed "$?" "Error in config file."
 
 echo_success "Done"

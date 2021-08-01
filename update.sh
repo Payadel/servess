@@ -4,8 +4,9 @@ clear_git() {
   echo "Clear git source..."
 
   if ! sudo rm -r "$git_dir"; then
+    code="$?"
     echo "Operation failed." >&2
-    exit $?
+    exit $code
   fi
   echo "done."
 }
@@ -37,8 +38,9 @@ git_servess_dir="$git_dir/$name"
 echo "Cloning..."
 
 if ! git clone https://github.com/HamidMolareza/$name.git "$git_dir"; then
+  code="$?"
   echo "Operation failed." >&2
-  exit $?
+  exit $code
 fi
 
 echo "done."
@@ -50,10 +52,10 @@ if [ -d "$libs_dir" ]; then
 fi
 
 if ! sudo mkdir -p "$libs_dir" && sudo cp -r "$git_shells_dir"/libs/* "$libs_dir/" && sudo chmod -R 750 "$libs_dir"; then
+  code="$?"
   echo "Operation failed." >&2
   clear_git "$git_dir"
-
-  exit $?
+  exit $code
 fi
 
 if [ -d "$shells_dir" ]; then
@@ -61,10 +63,10 @@ if [ -d "$shells_dir" ]; then
 fi
 
 if ! sudo mkdir -p "$shells_dir" && sudo cp "$git_shells_dir/installer.sh" "$shells_dir/" && sudo chmod -R 750 "$shells_dir/"; then
+  code="$?"
   echo "Operation failed." >&2
   clear_git "$git_dir"
-
-  exit $?
+  exit $code
 fi
 
 echo "done."
@@ -78,19 +80,19 @@ if [ -d "$install_servess_dir" ]; then
 fi
 
 if ! sudo mkdir -p "$install_servess_dir" && sudo chmod 750 "$install_servess_dir"; then
+  code="$?"
   echo "Operation failed." >&2
   clear_git "$git_dir"
-
-  exit $?
+  exit $code
 fi
 
 publish_file="$git_servess_dir/publish.sh"
 
 if ! sudo chmod 750 "$publish_file" && ($publish_file "$install_servess_dir" "$git_servess_dir/$name"); then
+  code="$?"
   echo "Operation failed." >&2
   clear_git "$git_dir"
-
-  exit $?
+  exit $code
 fi
 
 echo "done."
@@ -98,10 +100,10 @@ echo "done."
 echo "Adding execute access..."
 
 if ! sudo chmod 750 "$install_servess_dir/$cliName"; then
+  code="$?"
   echo "Operation failed." >&2
   clear_git "$git_dir"
-
-  exit $?
+  exit $codes
 fi
 echo "done."
 
@@ -111,10 +113,10 @@ if [ -f "$bin_path" ]; then
 fi
 
 if ! sudo ln -s "$install_servess_dir/$cliName" "$bin_path"; then
+  code="$?"
   echo "Operation failed." >&2
   clear_git "$git_dir"
-
-  exit $?
+  exit $codes
 fi
 echo "done."
 

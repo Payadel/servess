@@ -12,8 +12,9 @@ echo "Install tools..."
 echo "Install git..."
 
 if ! sudo apt install -y git-all; then
+  code="$?"
   echo "Operation failed." >&2
-  exit $?
+  exit $code
 fi
 
 echo "done."
@@ -22,8 +23,9 @@ echo "======================================================================="
 echo "Cloning project..."
 
 if ! git clone https://github.com/HamidMolareza/$name.git; then
+  code="$?"
   echo "Operation failed." >&2
-  exit $?
+  exit $code
 fi
 
 cd "$name" || exit
@@ -34,13 +36,15 @@ echo "Installing shell libs..."
 cd "Shells" || exit
 
 if ! sudo mkdir -p "$libs_dir" && sudo cp libs/* "$libs_dir/" && sudo chmod -R 750 "$libs_dir/"; then
+  code="$?"
   echo "Operation failed." >&2
-  exit $?
+  exit $code
 fi
 
 if ! mkdir -p "$shells_dir" && sudo cp installer.sh "$shells_dir/" && sudo chmod -R 750 "$shells_dir/"; then
+  code="$?"
   echo "Operation failed." >&2
-  exit $?
+  exit $code
 fi
 
 echo "done."
@@ -53,8 +57,9 @@ echo "Install tools..."
 echo "Install dotnet..."
 
 if ! sudo "$libs_dir/dotnet5-install.sh"; then
+  code="$?"
   echo "Operation failed." >&2
-  exit $?
+  exit $code
 fi
 
 echo "done."
@@ -65,13 +70,15 @@ echo "Building project..."
 cd "$currentDir/$name/$name" || exit
 
 if ! sudo mkdir -p "$install_servess_dir" && sudo chmod 750 "$install_servess_dir"; then
+  code="$?"
   echo "Operation failed." >&2
-  exit $?
+  exit $code
 fi
 
 if ! sudo chmod 750 ./publish.sh && (./publish.sh "$install_servess_dir"); then
+  code="$?"
   echo "Operation failed." >&2
-  exit $?
+  exit $code
 fi
 
 echo "done."
@@ -79,24 +86,27 @@ echo "done."
 echo "Adds execute access..."
 
 if ! cd $install_servess_dir && sudo chmod 750 "$cliName"; then
+  code="$?"
   echo "Operation failed." >&2
-  exit $?
+  exit $code
 fi
 echo "done."
 
 echo "Adds file to bin dir..."
 
 if ! sudo ln -s "$install_servess_dir/$cliName" "$bin_path"; then
+  code="$?"
   echo "Operation failed." >&2
-  exit $?
+  exit $code
 fi
 echo "done."
 
 echo "Clear git source..."
 
 if ! cd "$currentDir" && sudo rm -r "$name/"; then
+  code="$?"
   echo "Operation failed." >&2
-  exit $?
+  exit $codes
 fi
 echo "done."
 echo "======================================================================="

@@ -1,6 +1,6 @@
 if [ ! -f /opt/shell-libs/selectEditor.sh ]; then
   echo "Can not find library files." >&2
-  exit $?
+  exit 1
 fi
 . /opt/shell-libs/selectEditor.sh
 
