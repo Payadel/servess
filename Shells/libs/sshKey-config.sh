@@ -7,11 +7,6 @@ fi
 . /opt/shell-libs/colors.sh
 . /opt/shell-libs/utility.sh
 
-if [ "$#" -gt 2 ]; then
-  echo_error "Too many inputs."
-  exit 1
-fi
-
 username="$1"
 if [ -z "$username" ]; then
   printf "Username: "
