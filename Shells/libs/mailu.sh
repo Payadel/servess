@@ -235,10 +235,10 @@ else
 fi
 echo ""
 
-user_task "Go to https://setup.mailu.io/ and download setup files if haven't those files."
-echo ""
-
 if [ -z "$docker_compose_file" ] || [ ! -f "$docker_compose_file" ]; then
+  user_task "Go to https://setup.mailu.io/ and download setup files if haven't those files."
+  echo ""
+
   get_and_copy_file "docker-compose" "$homeDir/" "$username"
 else
   copy_file "$docker_compose_file" "$homeDir/" "$username"
