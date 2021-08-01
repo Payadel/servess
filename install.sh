@@ -46,7 +46,7 @@ echo "Building project..."
 sudo mkdir -p "$install_servess_dir" && sudo chmod 750 "$install_servess_dir"
 exit_if_operation_failed "$?"
 
-sudo chmod 750 $name/$name/publish.sh && ($name/$name/publish.sh "$install_servess_dir")
+sudo chmod 750 $name/$name/publish.sh && ($name/$name/publish.sh "$install_servess_dir" "$name/$name")
 exit_if_operation_failed "$?"
 
 echo "Adds execute access..."
