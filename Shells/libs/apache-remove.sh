@@ -1,7 +1,7 @@
 if service apache2 status; then
     echo "Apache is installed. This can disrupt the Nginx service."
     printf "Do you wand delete it? (y/n): "
-    read delete
+    read -r delete
     if [ "$delete" = "y" ] || [ "$delete" = "Y" ]; then
         sudo service apache2 stop
         sudo apt-get purge apache2 apache2-utils apache2.2-bin apache2-common

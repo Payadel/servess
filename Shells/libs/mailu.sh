@@ -232,6 +232,8 @@ echo ""
 echo_warning "You should change secret keys in mailu.env file:"
 cat "$homeDir/mailu.env" | grep SECRET_KEY
 cat "$homeDir/mailu.env" | grep DB_PW
+random_pass=$(/opt/shell-libs/password-generate.sh 12)
+echo_info "Random password: $random_pass"
 printf "Press enter to continue...."
 read -r _
 nano "$homeDir/mailu.env"

@@ -27,7 +27,13 @@ disable_password="$8"
 is_user_exist=$(id "$username" 2>/dev/null)
 if [ "$?" = "0" ]; then
   echo_error "The user already exists."
-  exit 1
+  printf "Do you want delete it? (y/n): "
+  read -r delete_user
+  if [ "$delete_user" != "y" ] && [ "$delete_user" != "Y" ]; then
+    exit 1
+  fi
+
+  /opt/shell-libs/user-delete.sh "$username"
 fi
 
 #Home directory
