@@ -1,14 +1,23 @@
+exit_if_operation_failed() {
+  local code="$1"
+  local message="$2"
+
+  if [ "$code" != "0" ]; then
+    if [ -n "$message" ]; then
+      echo -e "$message" >&2
+    else
+      echo "Operation failed with code $code."
+    fi
+    exit "$code"
+  fi
+}
+
 clear_git() {
-  git_dir=$1
+  git_dir="$1"
 
   echo "Clear git source..."
-
-  if ! sudo rm -r "$git_dir"; then
-    code="$?"
-    echo "Operation failed." >&2
-    exit $code
-  fi
-  echo "done."
+  sudo rm -r "$git_dir"
+  exit_if_operation_failed $?
 }
 
 name=Servess
@@ -16,10 +25,8 @@ cliName=servess
 install_dir="/opt"
 install_servess_dir="$install_dir/$cliName"
 bin_path="/usr/local/bin/servess"
-currentDir=$(pwd)
 libs_dir="$install_dir/shell-libs"
-shells_dir="$install_dir/shells"
-git_dir="$currentDir/$name"
+git_dir="$name"
 
 if [ -d "$name" ]; then
   printf "Directory %s is exist. do you want replace it? (y/n): " "$name"
@@ -28,7 +35,7 @@ if [ -d "$name" ]; then
     sudo rm -r "$name"
   else
     random_string=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13)
-    git_dir="$currentDir/$random_string"
+    git_dir="$random_string"
   fi
 fi
 
@@ -36,88 +43,48 @@ git_shells_dir="$git_dir/Shells"
 git_servess_dir="$git_dir/$name"
 
 echo "Cloning..."
-
-if ! git clone https://github.com/HamidMolareza/$name.git "$git_dir"; then
-  code="$?"
-  echo "Operation failed." >&2
-  exit $code
-fi
-
-echo "done."
-echo "======================================================================="
+git clone https://github.com/HamidMolareza/$name.git "$git_dir"
+exit_if_operation_failed $?
 
 echo "Installing shell libs..."
 if [ -d "$libs_dir" ]; then
   sudo rm -r "$libs_dir"
 fi
 
-if ! sudo mkdir -p "$libs_dir" && sudo cp -r "$git_shells_dir"/libs/* "$libs_dir/" && sudo chmod -R 750 "$libs_dir"; then
-  code="$?"
-  echo "Operation failed." >&2
-  clear_git "$git_dir"
-  exit $code
-fi
+sudo mkdir -p "$libs_dir" && sudo cp -r "$git_shells_dir"/libs/* "$libs_dir/" && sudo chmod -R 750 "$libs_dir"
+exit_if_operation_failed $?
 
-if [ -d "$shells_dir" ]; then
-  sudo rm -r "$shells_dir"
-fi
-
-if ! sudo mkdir -p "$shells_dir" && sudo cp "$git_shells_dir/installer.sh" "$shells_dir/" && sudo chmod -R 750 "$shells_dir/"; then
-  code="$?"
-  echo "Operation failed." >&2
-  clear_git "$git_dir"
-  exit $code
-fi
-
-echo "done."
-echo "======================================================================="
+sudo cp "$git_shells_dir/installer.sh" "$git_shells_dir"/libs/ && sudo chmod -R 750 "$git_shells_dir"/libs/installer.sh
+exit_if_operation_failed $?
 
 echo "Installing $cliName..."
-echo "Building project..."
 
+echo "Building project..."
 if [ -d "$install_servess_dir" ]; then
   sudo rm -r "$install_servess_dir"
 fi
 
-if ! sudo mkdir -p "$install_servess_dir" && sudo chmod 750 "$install_servess_dir"; then
-  code="$?"
-  echo "Operation failed." >&2
-  clear_git "$git_dir"
-  exit $code
-fi
+sudo mkdir -p "$install_servess_dir" && sudo chmod 750 "$install_servess_dir"
+exit_if_operation_failed $?
 
 publish_file="$git_servess_dir/publish.sh"
 
-if ! sudo chmod 750 "$publish_file" && ($publish_file "$install_servess_dir" "$git_servess_dir/$name"); then
-  code="$?"
-  echo "Operation failed." >&2
-  clear_git "$git_dir"
-  exit $code
-fi
-
-echo "done."
+sudo chmod 750 "$publish_file" && ($publish_file "$install_servess_dir" "$git_servess_dir")
+exit_if_operation_failed $?
 
 echo "Adding execute access..."
-
-if ! sudo chmod 750 "$install_servess_dir/$cliName"; then
-  code="$?"
-  echo "Operation failed." >&2
-  clear_git "$git_dir"
-  exit $codes
-fi
-echo "done."
+sudo chmod 750 "$install_servess_dir/$cliName"
+exit_if_operation_failed $?
 
 echo "Creating ln to $bin_path..."
 if [ -f "$bin_path" ]; then
   sudo rm "$bin_path"
 fi
 
-if ! sudo ln -s "$install_servess_dir/$cliName" "$bin_path"; then
-  code="$?"
-  echo "Operation failed." >&2
-  clear_git "$git_dir"
-  exit $codes
+if [ -f "$bin_path" ]; then
+    rm "$bin_path"
 fi
-echo "done."
+sudo ln -s "$install_servess_dir/$cliName" "$bin_path"
+exit_if_operation_failed $?
 
 clear_git "$git_dir"
