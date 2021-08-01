@@ -1,5 +1,5 @@
 #Libs
-if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-get-homeDir.sh ] || [ ! -f /opt/shell-libs/password-enable.sh ] || [ ! -f /opt/shell-libs/user-logout-sessions.sh ]; then
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-get-homeDir.sh ] || [ ! -f /opt/shell-libs/password-enable.sh ] || [ ! -f /opt/shell-libs/user-logout-sessions.sh ] || [ ! -f /opt/shell-libs/ssh-restart.sh ]; then
     echo "Can't find libs." >&2
     echo "Operation failed." >&2
     exit 1
@@ -110,7 +110,7 @@ fi
 show_warning_if_operation_failed "$?"
 
 echo_info "Restarting ssh..."
-sudo systemctl restart ssh
+/opt/shell-libs/ssh-restart.sh
 show_warning_if_operation_failed "$?"
 #=======================================================================
 
