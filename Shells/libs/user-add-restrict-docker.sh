@@ -135,7 +135,7 @@ fi
 show_warning_if_operation_failed "$?"
 
 echo ""
-printf "Enable docker service for %s?" "$(whoami)"
+printf "Enable docker service for %s? (y/n): " "$(whoami)"
 read -r enable_service
 if [ "$enable_service" = "y" ] || [ "$enable_service" = "Y" ]; then
   echo_info "Enabling dcoker service..."
