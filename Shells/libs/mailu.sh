@@ -267,20 +267,8 @@ config_nginx
 exit_if_operation_failed "$?"
 echo ""
 
-echo_info "Get server ip..."
-server_ip="$(/opt/shell-libs/ip-current.sh)"
-
-#Get Current Port
-ssh_port=$(/opt/shell-libs/ssh-port-current.sh)
-if [ "$?" != 0 ]; then
-  echo_error "Can not detect ssh port."
-  printf "SSH Port: "
-  read -r ssh_port
-fi
-
 echo_info "Running containers with docker-compose..."
-echo "ssh -t -p $ssh_port ""$username"@"$server_ip"""
-ssh -t -p "$ssh_port" "$username@$server_ip" "$restart_docker_shell; exit"
+"$homeDir"/.sudo/"$restart_docker_shell"
 exit_if_operation_failed "$?"
 
 echo_info "Sleep 25s to ensure all containers are run..."
