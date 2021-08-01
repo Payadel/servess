@@ -29,7 +29,7 @@ exit_if_operation_failed "$?"
 sudo systemctl disable --now docker.service docker.socket
 
 echo_info "Adding user ($username)..."
-sudo /opt/shell-libs/user-add.sh "$username" "n" "n" "y" "n" "y" "n"
+sudo /opt/shell-libs/user-add.sh "$username" "n" "n" "y" "n" "y" "n" "n"
 exit_if_operation_failed "$?"
 echo "================================================================================"
 echo ""

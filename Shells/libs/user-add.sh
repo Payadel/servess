@@ -21,6 +21,7 @@ disable_banner="$4"
 expire_password="$5"
 allow_ssh="$6"
 add_ssh_key="$7"
+disable_password="$8"
 #========================================================================
 
 is_user_exist=$(id "$username" 2>/dev/null)
@@ -113,7 +114,7 @@ if [ "$add_ssh_key" = "y" ] || [ "$add_ssh_key" = "Y" ]; then
   delete_user_if_operation_failed "$?"
 fi
 
-/opt/shell-libs/password-disable.sh "$username"
+/opt/shell-libs/password-disable.sh "$username" "$disable_password"
 show_warning_if_operation_failed "$?"
 
 echo_info "Restarting ssh..."
