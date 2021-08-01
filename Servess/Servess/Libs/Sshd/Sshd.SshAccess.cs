@@ -151,14 +151,15 @@ namespace Servess.Libs.Sshd {
                 resultAllowUsers = resultAllowUsers.Distinct().ToList();
                 if (!resultAllowUsers.IsNullOrEmpty() && !resultAllowUsers.Contains("root")) {
                     Console.WriteLine("Warning!");
-                    Console.WriteLine("The root user isn't exist in allowed list. This setting may prevent root user to access ssh.");
+                    Console.WriteLine(
+                        "The root user isn't exist in allowed list. This setting may prevent root user to access ssh.");
                     Console.Write("Do you want add root user to allowed list? (y/n) (y is recommended): ");
                     var addRoot = Console.ReadLine();
                     if (addRoot?.ToLower() == "y") {
                         resultAllowUsers.Add("root");
                     }
                 }
-                
+
                 var combinedAllowUsers = Utility.CombineList(resultAllowUsers, " ");
                 var methodResult = Utility.AddOrUpdateKeyValue(lines, allowUsersKey,
                     combinedAllowUsers, KeySeparator, CommentSign,
@@ -167,7 +168,7 @@ namespace Servess.Libs.Sshd {
                     return MethodResult<string>.Fail(methodResult.Detail);
                 }
 
-                
+
                 resultDenyUsers = resultDenyUsers.Distinct().ToList();
                 var combinedDenyUsers = Utility.CombineList(resultDenyUsers, " ");
                 methodResult = Utility.AddOrUpdateKeyValue(lines, denyUsersKey,

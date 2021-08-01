@@ -263,19 +263,16 @@ namespace Servess {
 
             return sb.ToString();
         }
-        
-       public static string ExecuteBashCommand(string command)
-        {
+
+        public static string ExecuteBashCommand(string command) {
             // according to: https://stackoverflow.com/a/15262019/637142
             // thans to this we will pass everything as one command
-            command = command.Replace("\"","\"\"");
+            command = command.Replace("\"", "\"\"");
 
-            var proc = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
+            var proc = new Process {
+                StartInfo = new ProcessStartInfo {
                     FileName = "/bin/bash",
-                    Arguments = "-c \""+ command + "\"",
+                    Arguments = "-c \"" + command + "\"",
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     CreateNoWindow = true
