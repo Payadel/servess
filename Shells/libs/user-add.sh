@@ -54,7 +54,9 @@ if [ -d "$home_dir" ]; then
 fi
 
 #Generate random password
-/opt/shell-libs/password-generate.sh
+echo ""
+password=$(/opt/shell-libs/password-generate.sh)
+echo_info "Random password: $password"
 
 sudo adduser --home "$home_dir" "$username"
 exit_if_operation_failed "$?"

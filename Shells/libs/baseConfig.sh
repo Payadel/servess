@@ -69,6 +69,7 @@ fi
 printf "Do you want change %s password? (y/n): " "$(whoami)"
 read -r input
 if [ "$input" == "y" ] || [ "$input" == "Y" ]; then
-  /opt/shell-libs/password-generate.sh
+  password=$(/opt/shell-libs/password-generate.sh)
+  echo_info "Random password: $password"
   sudo passwd "$(whoami)"
 fi
