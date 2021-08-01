@@ -105,7 +105,7 @@ namespace Servess.Libs.Sshd {
                 var currentAllowUsersIndex = allowUsersIndexMethodResult.Value;
 
                 var currentAllowUsersMethodResult = currentAllowUsersIndex > 0
-                    ? Utility.GetValue(lines[currentAllowUsersIndex], allowUsersKey, KeySeparator)
+                    ? Utility.GetValue(lines[currentAllowUsersIndex], allowUsersKey, KeySeparator, CommentSign)
                     : null;
 
                 if (currentAllowUsersMethodResult is not null && !currentAllowUsersMethodResult.IsSuccess) {
@@ -132,7 +132,7 @@ namespace Servess.Libs.Sshd {
 
 
                 var currentDenyUsersMethodResult = currentDenyUsersIndex > 0
-                    ? Utility.GetValue(lines[currentDenyUsersIndex], denyUsersKey, KeySeparator)
+                    ? Utility.GetValue(lines[currentDenyUsersIndex], denyUsersKey, KeySeparator, CommentSign)
                     : null;
                 if (currentDenyUsersMethodResult is not null && !currentDenyUsersMethodResult.IsSuccess) {
                     return MethodResult<string>.Fail(currentDenyUsersMethodResult.Detail);

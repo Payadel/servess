@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using FunctionalUtility.Extensions;
 using FunctionalUtility.ResultDetails.Errors;
@@ -31,8 +32,21 @@ namespace Servess.Libs.Sshd {
 
                 return TryExtensions.Try(() => {
                     var lines = File.ReadAllLines(path).ToList();
-                    using var fileStream = new FileStream(path, FileMode.Open, FileAccess.ReadWrite,
-                        FileShare.Read);
+
+                    var currentPortMethodResult = Utility.FindLineIndex(lines, PortKey, Separator, CommentSign)
+                        .OnSuccessFailWhen(index => index < 0, new InternalError(message: "Can not find current port!"))
+                        .OnSuccess(index => Utility.GetValue(lines[index], PortKey, Separator, CommentSign))
+                        .TryOnSuccess(Convert.ToInt32);
+                    if (!currentPortMethodResult.IsSuccess) {
+                        return MethodResult<string>.Fail(currentPortMethodResult.Detail);
+                    }
+
+                    var currentPort = currentPortMethodResult.Value;
+                    if (currentPort == Port) {
+                        return MethodResult<string>.Ok($"Duplicate port. No change. ({currentPort})");
+                    }
+
+                    Console.WriteLine($"Current port: {currentPort}");
 
                     var checkPortResult = Utility.ExecuteBashCommand($"sudo lsof -i:{Port}");
                     if (!string.IsNullOrEmpty(checkPortResult)) {
@@ -40,13 +54,10 @@ namespace Servess.Libs.Sshd {
                             new BadRequestError(message: $"Port is not free.\n{checkPortResult}"));
                     }
 
-                    var methodResult =
-                        Utility.AddOrUpdateKeyValue(lines, PortKey, Port.ToString(), Separator, CommentSign);
-
-                    fileStream.Close();
-
-                    return methodResult.TryOnSuccess(newLines => File.WriteAllLines(path, newLines))
-                        .OnSuccess(() => MethodResult<string>.Ok("Done"));
+                    return Utility.AddOrUpdateKeyValue(lines, PortKey, Port.ToString(), Separator, CommentSign)
+                        .OnSuccess(newLines => FirewallUtility.AllowPort(Port)
+                            .TryOnSuccess(() => File.WriteAllLines(path, newLines))
+                            .OnSuccess(() => MethodResult<string>.Ok("Done")));
                 });
             }
         }

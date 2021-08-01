@@ -109,6 +109,7 @@ namespace Servess {
                 key = key.ToLower();
                 var keyWithSeparator = $"{key}{separator}";
 
+                //TODO: What happen if we have multi comment signs?
                 var commentSignWithSpace = $"{commentSign}{separator}";
                 var selectedLines = new List<(string line, int index, bool isComment)>();
                 for (var i = 0; i < lines.Count; i++) {
@@ -138,12 +139,14 @@ namespace Servess {
                 }
             });
 
-        public static MethodResult<string> GetValue(string input, string key, string separator) =>
+        public static MethodResult<string> GetValue(string input, string key, string separator, string commentSign) =>
             MethodResult<string>.Ok("")
-                .OnSuccess(() => RemoveExtraSpaces(input).Split(separator))
-                .OnSuccessFailWhen(result => result.Length > 0
-                                             && !string.Equals(result.First(), key,
-                                                 StringComparison.CurrentCultureIgnoreCase),
+                .OnSuccess(() => RemoveExtraSpaces(input))
+                .OnSuccessOperateWhen(result => result.StartsWith(commentSign), result => {
+                    var keyIndex = result.IndexOf(key, StringComparison.Ordinal);
+                    return MethodResult<string>.Ok(result.Remove(0, keyIndex));
+                })
+                .OnSuccessFailWhen(result => !result.StartsWith($"{key}{separator}"),
                     new BadRequestError(title: "Key Value Detection Error", message: $"Can't detect key in {input}"))
                 .OnSuccess(result => result.Length > 0 ? input.Remove(0, (key + separator).Length) : "");
 
