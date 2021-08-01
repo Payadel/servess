@@ -4,4 +4,4 @@ cat /etc/ssh/ssh_host_rsa_key.pub
 echo "-----------------------------------------------------"
 
 printf "Please check server finger print and press enter key to continue."
-read input
+read -r _

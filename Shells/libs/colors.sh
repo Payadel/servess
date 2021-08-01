@@ -93,17 +93,17 @@ WARNING_COLORIZED="${BOLD_YELLOW}Warning${ENDCOLOR}"
 INFO_COLORIZED="${BOLD_BLUE}Info${ENDCOLOR}"
 
 echo_info() {
-    echo -e "${INFO_COLORIZED}: $1"
+  echo -e "${INFO_COLORIZED}: $1"
 }
 
 echo_warning() {
-    echo -e "${WARNING_COLORIZED}: $1"
+  echo -e "${WARNING_COLORIZED}: $1"
 }
 
 echo_error() {
-    echo -e "${ERROR_COLORIZED}: $1" >&2
+  echo -e "${ERROR_COLORIZED}: $1" >&2
 }
 
 echo_success() {
-    echo -e "${BOLD_GREEN}$1${ENDCOLOR}"
+  echo -e "${BOLD_GREEN}$1${ENDCOLOR}"
 }

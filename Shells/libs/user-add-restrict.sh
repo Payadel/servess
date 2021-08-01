@@ -1,17 +1,17 @@
 #Libs
-if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ~ -f /opt/shell-libs/user-convert-to-restrict.sh ]; then
-    echo "Can't find libs." >&2
-    echo "Operation failed." >&2
-    exit 1
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-convert-to-restrict.sh ]; then
+  echo "Can't find libs." >&2
+  echo "Operation failed." >&2
+  exit 1
 fi
 . /opt/shell-libs/colors.sh
 . /opt/shell-libs/utility.sh
 
 if [ -z "$1" ]; then
-    printf "Username: "
-    read username
+  printf "Username: "
+  read -r username
 else
-    username=$1
+  username=$1
 fi
 
 echo_info "Create user $username..."
@@ -19,7 +19,7 @@ echo_info "Create user $username..."
 exit_if_operation_failed "$?"
 
 echo_info "Convert $username to restrict mode..."
-/opt/shell-libs/user-convert-to-restrict.sh $username
+/opt/shell-libs/user-convert-to-restrict.sh "$username"
 delete_user_if_operation_failed "$?"
 
 echo_success "Done"

@@ -1,97 +1,97 @@
 #Libs
 if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-add-restrict-docker.sh ] || [ ! -f /opt/shell-libs/user-get-homeDir.sh ] || [ ! -f /opt/shell-libs/nginx-add-app.sh ] || [ ! -f /opt/shell-libs/ip-current.sh ] || [ ! -f /opt/shell-libs/ufw-mailu.sh ] || [ ! -f /opt/shell-libs/password-generate.sh ]; then
-    echo "Can't find libs." >&2
-    echo "Operation failed." >&2
-    exit 1
+  echo "Can't find libs." >&2
+  echo "Operation failed." >&2
+  exit 1
 fi
 . /opt/shell-libs/colors.sh
 . /opt/shell-libs/utility.sh
 
 copy_file() {
-    local fileName="$1"
-    local output="$2"
-    local username="$3"
+  local fileName="$1"
+  local output="$2"
+  local username="$3"
 
-    while true; do
-        printf "$fileName file: "
-        read file
-        if [ -f "$file" ]; then
-            sudo cp "$file" "$output" && sudo chown "$username:$username" "$file"
-            break
-        fi
-        echo_error "Can not find file: $file"
-    done
+  while true; do
+    printf "%s file: " "$fileName"
+    read -r file
+    if [ -f "$file" ]; then
+      sudo cp "$file" "$output" && sudo chown "$username:$username" "$file"
+      break
+    fi
+    echo_error "Can not find file: $file"
+  done
 }
 
 port_must_free() {
-    local port="$1"
+  local port="$1"
 
-    while true; do
-        result=$(sudo lsof -i:$port)
-        if [ "$?" != 0 ] && [ -z "$result" ]; then
-            break
-        fi
-        echo_error "Port $port is not free. Press enter to check again..."
-        read temp
-    done
+  while true; do
+    result=$(sudo lsof -i:"$port")
+    if [ "$?" != 0 ] && [ -z "$result" ]; then
+      break
+    fi
+    echo_error "Port $port is not free. Press enter to check again..."
+    read -r temp
+  done
 }
 
 add_a_record_dns_task() {
-    user_task "Create A record DNS:     mail    Your IP address"
-    mail_ipAddress=$(nslookup -type=A "mail.$domain" | grep "Address:" | gawk -F: '{ print $2 }' | sed -n 2p)
-    if [ "$?" != 0 ] || [ -z "$mail_ipAddress" ]; then
-        echo_warning "We have trouble with DNS!"
-        user_task "Ensure DNS is correct."
-    else
-        echo_info "Looks good."
-    fi
+  user_task "Create A record DNS:     mail    Your IP address"
+  mail_ipAddress=$(nslookup -type=A "mail.$domain" | grep "Address:" | gawk -F: '{ print $2 }' | sed -n 2p)
+  if [ "$?" != 0 ] || [ -z "$mail_ipAddress" ]; then
+    echo_warning "We have trouble with DNS!"
+    user_task "Ensure DNS is correct."
+  else
+    echo_info "Looks good."
+  fi
 }
 
 add_mx_record_dns_task() {
-    user_task "Create MX record DNS:     @    mail.$domain"
-    mx_record=$(nslookup -type=MX "$domain" | grep $domain | grep mail.$domain)
-    if [ "$?" != 0 ] || [ -z "$mx_record" ]; then
-        echo_warning "We have trouble with MX DNS record"
-        user_task "Ensure DNS is correct."
-    else
-        echo_info "Looks good."
-    fi
+  user_task "Create MX record DNS:     @    mail.$domain"
+  mx_record=$(nslookup -type=MX "$domain" | grep $domain | grep mail.$domain)
+  if [ "$?" != 0 ] || [ -z "$mx_record" ]; then
+    echo_warning "We have trouble with MX DNS record"
+    user_task "Ensure DNS is correct."
+  else
+    echo_info "Looks good."
+  fi
 }
 
 ensure_ports_are_free() {
-    port_must_free "2500"
-    port_must_free "8081"
-    port_must_free "8443"
-    port_must_free "1100"
-    port_must_free "1430"
-    port_must_free "4650"
-    port_must_free "5870"
-    port_must_free "9930"
-    port_must_free "9950"
+  port_must_free "2500"
+  port_must_free "8081"
+  port_must_free "8443"
+  port_must_free "1100"
+  port_must_free "1430"
+  port_must_free "4650"
+  port_must_free "5870"
+  port_must_free "9930"
+  port_must_free "9950"
 }
 
 config_nginx() {
-    nginx_dir="/etc/nginx"
+  nginx_dir="/etc/nginx"
 
-    while true; do
-        if [ ! -d "$nginx_dir" ]; then
-            echo_error "Can not find nginx directory in $nginx_dir"
-            printf "Input nginx directory path: "
-            read nginx_dir
-        else
-            break
-        fi
-    done
-
-    nginx_config_file="$nginx_dir/nginx.conf"
-    mailu_config_title="#Mailu Config"
-    mailu_config_data=$(cat $nginx_config_file | grep $mailu_config_title)
-    if [ ! -z "$mailu_config_title" ]; then
-        return 0
+  while true; do
+    if [ ! -d "$nginx_dir" ]; then
+      echo_error "Can not find nginx directory in $nginx_dir"
+      printf "Input nginx directory path: "
+      read -r nginx_dir
+    else
+      break
     fi
+  done
 
-    echo_info "Updating $nginx_config_file..."
-    echo "
+  nginx_config_file="$nginx_dir/nginx.conf"
+  mailu_config_title="#Mailu Config"
+  mailu_config_data=$(cat "$nginx_config_file" | grep "$mailu_config_title")
+  if [ -n "$mailu_config_data" ]; then
+    return 0
+  fi
+
+  echo_info "Updating $nginx_config_file..."
+  echo "
 $mailu_config_title
 stream
 {
@@ -141,40 +141,40 @@ stream
 }
 
 check_spf_dns_record() {
-    echo_info "Cheching SPF record..."
-    spf_record=$(nslookup -type=txt "$domain" | grep $domain | grep v=spf)
-    if [ "$?" != 0 ] || [ -z "$spf_record" ]; then
-        echo_warning "We have trouble with SPF DNS record"
-        user_task "Ensure DNS is correct."
-    else
-        echo_info "Looks good."
-    fi
+  echo_info "Checking SPF record..."
+  spf_record=$(nslookup -type=txt "$domain" | grep "$domain" | grep v=spf)
+  if [ "$?" != 0 ] || [ -z "$spf_record" ]; then
+    echo_warning "We have trouble with SPF DNS record"
+    user_task "Ensure DNS is correct."
+  else
+    echo_info "Looks good."
+  fi
 }
 
 check_dkim_dns_record() {
-    echo_info "Cheching DKIM record..."
-    dkim_record=$(nslookup -type=txt dkim._domainkey.$domain | grep dkim._domainkey.$domain)
-    if [ "$?" != 0 ] || [ -z "$dkim_record" ]; then
-        echo_warning "We have trouble with DKIM DNS record"
-        user_task "Ensure DNS is correct."
-    else
-        echo_info "Looks good."
-    fi
+  echo_info "Checking DKIM record..."
+  dkim_record=$(nslookup -type=txt dkim._domainkey."$domain" | grep dkim._domainkey."$domain")
+  if [ "$?" != 0 ] || [ -z "$dkim_record" ]; then
+    echo_warning "We have trouble with DKIM DNS record"
+    user_task "Ensure DNS is correct."
+  else
+    echo_info "Looks good."
+  fi
 }
 
 check_dmarc_dns_record() {
-    echo_info "Cheching DMARC record..."
-    dmarc_record=$(nslookup -type=txt _dmarc.$domain | grep _dmarc.$domain)
-    if [ "$?" != 0 ] || [ -z "$dmarc_record" ]; then
-        echo_warning "We have trouble with DMARC DNS record"
-        user_task "Ensure DNS is correct."
-    else
-        echo_info "Looks good."
-    fi
+  echo_info "Cheching DMARC record..."
+  dmarc_record=$(nslookup -type=txt _dmarc."$domain" | grep _dmarc."$domain")
+  if [ "$?" != 0 ] || [ -z "$dmarc_record" ]; then
+    echo_warning "We have trouble with DMARC DNS record"
+    user_task "Ensure DNS is correct."
+  else
+    echo_info "Looks good."
+  fi
 }
 
 printf "Your domain (like example.com): "
-read domain
+read -r domain
 
 add_a_record_dns_task
 echo ""
@@ -193,7 +193,7 @@ echo ""
 
 echo_info "Create user for mail services..."
 printf "Username: "
-read username
+read -r username
 
 /opt/shell-libs/user-add-restrict-docker.sh "$username"
 exit_if_operation_failed "$?"
@@ -201,16 +201,16 @@ exit_if_operation_failed "$?"
 #Find user home dir
 homeDir=$(/opt/shell-libs/user-get-homeDir.sh "$username")
 if [ "$?" != 0 ] || [ -z "$homeDir" ]; then
-    echo_error "Can't detect user home directory."
-    printf "User home directory: "
-    read homeDir
+  echo_error "Can't detect user home directory."
+  printf "User home directory: "
+  read -r homeDir
 
-    if [ ! -d "$homeDir" ]; then
-        echo_error "Invalid directory."
-        exit 1
-    fi
+  if [ ! -d "$homeDir" ]; then
+    echo_error "Invalid directory."
+    exit 1
+  fi
 else
-    echo_info "User home directory detected: $homeDir"
+  echo_info "User home directory detected: $homeDir"
 fi
 echo ""
 
@@ -233,7 +233,7 @@ echo_warning "You should change secret keys in mailu.env file:"
 cat "$homeDir/mailu.env" | grep SECRET_KEY
 cat "$homeDir/mailu.env" | grep DB_PW
 printf "Press enter to continue...."
-read temp
+read -r _
 nano "$homeDir/mailu.env"
 echo ""
 
@@ -262,7 +262,7 @@ echo_info "Get server ip..."
 server_ip="$(/opt/shell-libs/ip-current.sh)"
 
 echo_info "Running containers with docker-compose..."
-echo "ssh -t "$username@$server_ip""
+echo "ssh -t ""$username"@"$server_ip"""
 ssh -t "$username@$server_ip" "$restart_docker_shell; exit"
 exit_if_operation_failed "$?"
 
@@ -274,10 +274,10 @@ echo ""
 /opt/shell-libs/password-generate.sh
 
 echo_info "Set password for admin@$domain..."
-printf "Password for admin@$domain: "
-read admin_password
+printf "Password for admin@%s: " "$domain"
+read -r admin_password
 
-echo "ssh -t "$username@$server_ip""
+echo "ssh -t ""$username"@"$server_ip"""
 ssh -t "$username@$server_ip" "docker-compose -p mailu exec admin flask mailu admin admin $domain $admin_password; exit"
 show_warning_if_operation_failed "$?"
 echo ""

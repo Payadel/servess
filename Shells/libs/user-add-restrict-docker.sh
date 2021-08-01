@@ -1,25 +1,25 @@
 #Libs
 if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-ssh-access.sh ] || [ ! -f /opt/shell-libs/sshKey-config.sh ] || [ ! -f /opt/shell-libs/ip-current.sh ] || [ ! -f /opt/shell-libs/password-disable.sh ]; then
-    echo "Can't find libs." >&2
-    echo "Operation failed." >&2
-    exit 1
+  echo "Can't find libs." >&2
+  echo "Operation failed." >&2
+  exit 1
 fi
 . /opt/shell-libs/colors.sh
 . /opt/shell-libs/utility.sh
 
 #Get Inputs
 if [ -z "$1" ]; then
-    printf "Username: "
-    read username
+  printf "Username: "
+  read -r username
 else
-    username=$1
+  username=$1
 fi
 #================================================================================
 
 #Checks
 if [ ! -f "/opt/shell-libs/user-add.sh" ]; then
-    echo_error "Can not find user-add.sh library."
-    exit 1
+  echo_error "Can not find user-add.sh library."
+  exit 1
 fi
 #================================================================================
 echo_info "Prepairing..."
@@ -37,7 +37,7 @@ echo ""
 echo_info "Get server ip..."
 server_ip="$(/opt/shell-libs/ip-current.sh)"
 
-echo "ssh -t "$username@$server_ip""
+echo "ssh -t ""$username"@"$server_ip"""
 ssh -t "$username@$server_ip" "dockerd-rootless-setuptool.sh install && systemctl --user start docker && systemctl --user enable docker; exit"
 exit_if_operation_failed "$?"
 echo "================================================================================"
@@ -53,19 +53,19 @@ echo_info "Convert user to restrict mode..."
 #Find user home dir
 homeDir=$(/opt/shell-libs/user-get-homeDir.sh "$username")
 if [ "$?" != 0 ] || [ -z "$homeDir" ]; then
-    echo_error "Can't detect user home directory."
-    printf "User home directory: "
-    read homeDir
+  echo_error "Can't detect user home directory."
+  printf "User home directory: "
+  read -r homeDir
 
-    if [ ! -d "$homeDir" ]; then
-        echo_error "Invalid directory."
-        exit 1
-    fi
+  if [ ! -d "$homeDir" ]; then
+    echo_error "Invalid directory."
+    exit 1
+  fi
 fi
 
 bin_dir="$homeDir/bin"
 if [ ! -d "$bin_dir" ]; then
-    mkdir "$bin_dir"
+  mkdir "$bin_dir"
 fi
 
 echo_info "Adds commands for user"
@@ -83,7 +83,7 @@ profile_file="$homeDir/.profile"
 echo_info "Adding contents..."
 chattr -i "$profile_file"
 
-group_number=$(grep ^$username /etc/passwd | gawk -F: '{ print $3 }')
+group_number=$(grep ^"$username" /etc/passwd | gawk -F: '{ print $3 }')
 
 echo "# don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options
@@ -105,10 +105,10 @@ show_warning_if_operation_failed "$?"
 #===============================================================================
 echo ""
 printf "Do you want to login in docker? (y/n): "
-read loginToDocker
+read -r loginToDocker
 
 if [ "$loginToDocker" = "y" ] || [ "$loginToDocker" = "Y" ]; then
-    ssh -t "$username@$server_ip" "docker login; exit"
+  ssh -t "$username@$server_ip" "docker login; exit"
 fi
 
 #SSH Access
@@ -117,22 +117,22 @@ show_warning_if_operation_failed "$?"
 
 #SSH Key
 printf "Do you want add ssh key? (y/n): "
-read add_ssh_key
+read -r add_ssh_key
 if [ "$add_ssh_key" = "y" ] || [ "$add_ssh_key" = "Y" ]; then
-    /opt/shell-libs/sshKey-config.sh "$username"
-    show_warning_if_operation_failed "$?"
+  /opt/shell-libs/sshKey-config.sh "$username"
+  show_warning_if_operation_failed "$?"
 fi
 
 /opt/shell-libs/password-disable.sh "$username"
 show_warning_if_operation_failed "$?"
 
 echo ""
-printf "Enable docker service for $(whoami)?"
-read enable_service
+printf "Enable docker service for %s?" "$(whoami)"
+read -r enable_service
 if [ "$enable_service" = "y" ] || [ "$enable_service" = "Y" ]; then
-    echo_info "Enabling dcoker service..."
-    sudo systemctl enable --now docker.service docker.socket
-    show_warning_if_operation_failed "$?"
+  echo_info "Enabling dcoker service..."
+  sudo systemctl enable --now docker.service docker.socket
+  show_warning_if_operation_failed "$?"
 fi
 
 echo_success "Done"

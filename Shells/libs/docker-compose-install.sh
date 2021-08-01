@@ -4,8 +4,9 @@ sudo chmod +x /usr/local/bin/docker-compose
 
 #Install command completion
 sudo curl \
-    -L https://raw.githubusercontent.com/docker/compose/1.29.2/contrib/completion/bash/docker-compose \
-    -o /etc/bash_completion.d/docker-compose
-source ~/.bashrc
+-L https://raw.githubusercontent.com/docker/compose/1.29.2/contrib/completion/bash/docker-compose \
+-o /etc/bash_completion.d/docker-compose
+
+source "${HOME}/.bashrc"
 
 docker-compose --version

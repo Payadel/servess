@@ -1,59 +1,57 @@
 if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ]; then
-    echo "Can't find libs" >&2
-    echo "Operation failed." >&2
-    exit 1
+  echo "Can't find libs" >&2
+  echo "Operation failed." >&2
+  exit 1
 fi
 . /opt/shell-libs/colors.sh
 . /opt/shell-libs/utility.sh
 
 echo_skipped_operation() {
-    echo_warning "Operation skipped."
-    echo "Operation skipped." >>$statusFile
+  echo_warning "Operation skipped."
+  echo "Operation skipped." >>"$statusFile"
 }
 
 run() {
-    if [ "$#" -lt 2 ]; then
-        echo_error "Too few inputs to run function."
-        echo_skip_operation
-        return 1
-    fi
+  if [ "$#" -lt 2 ]; then
+    echo_error "Too few inputs to run function."
+    echo_skip_operation
+    return 1
+  fi
 
-    process_name=$1
-    execute_path=$2
+  process_name=$1
+  execute_path=$2
 
-    echo_info "Processing $process_name..."
-    echo "Processing $process_name..." >>$statusFile
+  echo_info "Processing $process_name..."
+  echo "Processing $process_name..." >>"$statusFile"
 
-    sudo chmod +x $execute_path
-    if [ "$?" != "0" ]; then
-        echo_skipped_operation
-        return 1
-    fi
+  if ! sudo chmod +x "$execute_path"; then
+    echo_skipped_operation
+    return 1
+  fi
 
-    $execute_path $3 $4 $5 $6 $7 $8 $9
-    if [ "$?" = 0 ]; then
-        echo_success "Done"
-        echo "DONE." >>$statusFile
-    else
-        echo_skipped_operation
-        return 1
-    fi
+  if $execute_path "$3" "$4" "$5" "$6" "$7" "$8" "$9"; then
+    echo_success "Done"
+    echo "DONE." >>"$statusFile"
+  else
+    echo_skipped_operation
+    return 1
+  fi
 
-    echo "============================================================" >>$statusFile
-    echo "============================================================"
-    echo "============================================================"
-    echo "============================================================"
+  echo "============================================================" >>"$statusFile"
+  echo "============================================================"
+  echo "============================================================"
+  echo "============================================================"
 }
 
 #Inputs:
 if [ -z "$1" ]; then
-    printf "Input backup path (default: /var): "
-    read backup_basePath
-    if [ -z "$backup_basePath" ]; then
-        backup_basePath="/var"
-    fi
+  printf "Input backup path (default: /var): "
+  read -r backup_basePath
+  if [ -z "$backup_basePath" ]; then
+    backup_basePath="/var"
+  fi
 else
-    backup_basePath=$1
+  backup_basePath=$1
 fi
 backup_dirName="server-backups"
 backup_dir="$backup_basePath/$backup_dirName"
@@ -63,7 +61,7 @@ exit_if_operation_failed "$?"
 # Status file
 statusFile="install-status.txt"
 if [ -f "$statusFile" ]; then
-    rm "$statusFile"
+  rm "$statusFile"
 fi
 touch "$statusFile" && sudo chmod 750 "$statusFile"
 exit_if_operation_failed "$?"
