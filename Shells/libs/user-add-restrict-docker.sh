@@ -1,5 +1,5 @@
 #Libs
-if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-ssh-access.sh ] || [ ! -f /opt/shell-libs/sshKey-config.sh ] || [ ! -f /opt/shell-libs/ip-current.sh ] || [ ! -f /opt/shell-libs/password-disable.sh ]; then
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-ssh-access.sh ] || [ ! -f /opt/shell-libs/sshKey-config.sh ] || [ ! -f /opt/shell-libs/ip-current.sh ] || [ ! -f /opt/shell-libs/password-disable.sh ] || [ ! -f /opt/shell-libs/ssh-port-current.sh ]; then
   echo "Can't find libs." >&2
   echo "Operation failed." >&2
   exit 1
@@ -37,8 +37,16 @@ echo ""
 echo_info "Get server ip..."
 server_ip="$(/opt/shell-libs/ip-current.sh)"
 
-echo "ssh -t ""$username"@"$server_ip"""
-ssh -t "$username@$server_ip" "dockerd-rootless-setuptool.sh install && systemctl --user start docker && systemctl --user enable docker; exit"
+#Get Current Port
+ssh_port=$(/opt/shell-libs/ssh-port-current.sh)
+if [ "$?" != 0 ]; then
+  echo_error "Can not detect ssh port."
+  printf "SSH Port: "
+  read -r ssh_port
+fi
+
+echo "ssh -t -p $ssh_port ""$username"@"$server_ip"""
+ssh -t -p "$ssh_port" "$username@$server_ip" "dockerd-rootless-setuptool.sh install && systemctl --user start docker && systemctl --user enable docker; exit"
 exit_if_operation_failed "$?"
 echo "================================================================================"
 echo ""
@@ -108,7 +116,7 @@ printf "Do you want to login in docker? (y/n): "
 read -r loginToDocker
 
 if [ "$loginToDocker" = "y" ] || [ "$loginToDocker" = "Y" ]; then
-  ssh -t "$username@$server_ip" "docker login; exit"
+  ssh -t -p "$ssh_port" "$username@$server_ip" "docker login; exit"
 fi
 
 #SSH Access
