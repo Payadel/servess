@@ -8,6 +8,14 @@ fi
 . /opt/shell-libs/utility.sh
 
 copy_file() {
+  local file="$1"
+  local output="$2"
+  local username="$3"
+
+  sudo cp "$file" "$output" && sudo chown "$username:$username" "$file"
+}
+
+get_and_copy_file() {
   local fileName="$1"
   local output="$2"
   local username="$3"
@@ -16,7 +24,7 @@ copy_file() {
     printf "%s file: " "$fileName"
     read -r file
     if [ -f "$file" ]; then
-      sudo cp "$file" "$output" && sudo chown "$username:$username" "$file"
+      copy_file "$file" "$output" "$username"
       break
     fi
     echo_error "Can not find file: $file"
@@ -174,8 +182,35 @@ check_dmarc_dns_record() {
   fi
 }
 
-printf "Your domain (like example.com): "
-read -r domain
+exit_if_file_not_exist() {
+  local file="$1"
+
+  if [ ! -f "$file" ]; then
+    echo_error "File $file not found."
+    exit 1
+  fi
+}
+
+domain="$1"
+if [ -z "$domain" ]; then
+  printf "Your domain (like example.com): "
+  read -r domain
+fi
+
+username="$2"
+admin_password="$3"
+
+docker_compose_file="$4"
+exit_if_file_not_exist "$docker_compose_file"
+
+mailu_env_file="$5"
+exit_if_file_not_exist "$mailu_env_file"
+
+privateKey_file="$6"
+exit_if_file_not_exist "$privateKey_file"
+
+fullchain_file="$7"
+exit_if_file_not_exist "$fullchain_files"
 
 add_a_record_dns_task
 echo ""
@@ -193,8 +228,10 @@ exit_if_operation_failed "$?"
 echo ""
 
 echo_info "Create user for mail services..."
-printf "Username: "
-read -r username
+if [ -z "$username" ]; then
+  printf "Username: "
+  read -r username
+fi
 
 /opt/shell-libs/user-add-restrict-docker.sh "$username"
 exit_if_operation_failed "$?"
@@ -218,10 +255,18 @@ echo ""
 user_task "Go to https://setup.mailu.io/ and download setup files if haven't those files."
 echo ""
 
-copy_file "docker-compose" "$homeDir/" "$username"
+if [ -z "$docker_compose_file" ]; then
+  get_and_copy_file "docker-compose" "$homeDir/" "$username"
+else
+  copy_file "$docker_compose_file" "$homeDir/" "$username"
+fi
 delete_user_if_operation_failed "$?"
 
-copy_file "mailu.env" "$homeDir/" "$username"
+if [ -z "$mailu_env_file" ]; then
+  get_and_copy_file "mailu.env" "$homeDir/" "$username"
+else
+  copy_file "$mailu_env_file" "$homeDir/" "$username"
+fi
 delete_user_if_operation_failed "$?"
 
 echo_info "Create directory for volumes..."
@@ -256,9 +301,18 @@ mkdir -p "$homeDir/mailu/certs" && sudo chown "$username:$username" "$homeDir/ma
 show_warning_if_operation_failed "$?"
 
 #Copy cert files:
-copy_file "privkey.pem" "$homeDir/mailu/certs/key.pem" "$username"
+if [ -z "$privateKey_file" ]; then
+  get_and_copy_file "privkey.pem" "$homeDir/mailu/certs/key.pem" "$username"
+else
+  copy_file "$privateKey_file" "$homeDir/mailu/certs/key.pem" "$username"
+fi
 show_warning_if_operation_failed "$?"
-copy_file "fullchain.pem" "$homeDir/mailu/certs/cert.pem" "$username"
+
+if [ -z "$fullchain_file" ]; then
+  get_and_copy_file "fullchain.pem" "$homeDir/mailu/certs/cert.pem" "$username"
+else
+  copy_file "$fullchain_file" "$homeDir/mailu/certs/cert.pem" "$username"
+fi
 show_warning_if_operation_failed "$?"
 echo ""
 
@@ -292,9 +346,11 @@ echo ""
 password=$(/opt/shell-libs/password-generate.sh)
 echo_info "Random password: $password"
 
-echo_info "Set password for admin@$domain..."
-printf "Password for admin@%s: " "$domain"
-read -r admin_password
+if [ -z "$admin_password" ]; then
+  echo_info "Set password for admin@$domain..."
+  printf "Password for admin@%s: " "$domain"
+  read -r admin_password
+fi
 
 echo_info "dcoker-compose up..."
 sudo docker-compose --host unix:///run/user/$group_number/docker.sock -p mailu exec admin flask mailu admin admin $domain $admin_password
