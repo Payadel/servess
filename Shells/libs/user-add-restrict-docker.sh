@@ -91,7 +91,7 @@ profile_file="$homeDir/.profile"
 echo_info "Adding contents..."
 chattr -i "$profile_file"
 
-group_number=$(/opt/shell-libs/user-group-number.sh)
+group_number=$(/opt/shell-libs/user-group-number.sh "$username")
 
 echo "# don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options

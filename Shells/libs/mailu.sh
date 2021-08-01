@@ -1,5 +1,5 @@
 #Libs
-if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-add-restrict-docker.sh ] || [ ! -f /opt/shell-libs/user-get-homeDir.sh ] || [ ! -f /opt/shell-libs/nginx-add-app.sh ] || [ ! -f /opt/shell-libs/ip-current.sh ] || [ ! -f /opt/shell-libs/ufw-mailu.sh ] || [ ! -f /opt/shell-libs/password-generate.sh ]; then
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-add-restrict-docker.sh ] || [ ! -f /opt/shell-libs/user-get-homeDir.sh ] || [ ! -f /opt/shell-libs/nginx-add-app.sh ] || [ ! -f /opt/shell-libs/ip-current.sh ] || [ ! -f /opt/shell-libs/ufw-mailu.sh ] || [ ! -f /opt/shell-libs/password-generate.sh ] || [ ! -f /opt/shell-libs/user-group-number.sh ]; then
   echo "Can't find libs." >&2
   echo "Operation failed." >&2
   exit 1
@@ -246,7 +246,7 @@ echo_info "Create $restart_docker_shell..."
 sudo chattr -i "$homeDir/bin" && echo "docker-compose down && docker-compose -p mailu up -d" >>"$homeDir/bin/$restart_docker_shell" && sudo chmod +x "$homeDir/bin/$restart_docker_shell" && chattr +i "$homeDir/bin"
 
 echo_info "Create sudo-$restart_docker_shell..."
-group_number=$(/opt/shell-libs/user-group-number.sh)
+group_number=$(/opt/shell-libs/user-group-number.sh "$username")
 sudo mkdir "$homeDir/.sudo" && echo "sudo docker-compose --host unix:///run/user/$group_number/docker.sock down && sudo docker-compose --host unix:///run/user/$group_number/docker.sock  -p mailu up -d" >>"$homeDir/.sudo/$restart_docker_shell" && sudo chmod +x "$homeDir/.sudo/$restart_docker_shell" && chmod 750 "$homeDir/.sudo" && chattr +i "$homeDir/.sudo"
 
 show_warning_if_operation_failed "$?"
