@@ -146,9 +146,9 @@ namespace Servess {
                     var keyIndex = result.IndexOf(key, StringComparison.Ordinal);
                     return MethodResult<string>.Ok(result.Remove(0, keyIndex));
                 })
-                .OnSuccessFailWhen(result => !result.StartsWith($"{key}{separator}"),
+                .OnSuccessFailWhen(result => !result.StartsWith($"{key}"),
                     new BadRequestError(title: "Key Value Detection Error", message: $"Can't detect key in {input}"))
-                .OnSuccess(result => result.Length > 0 ? input.Remove(0, (key + separator).Length) : "");
+                .OnSuccess(result => result.Length > (key + separator).Length ? input.Remove(0, (key + separator).Length) : "");
 
         private static string GenerateKeyValue(string key, string value, string separator = " ") =>
             $"{key}{separator}{value}";
