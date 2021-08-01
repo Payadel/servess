@@ -83,8 +83,6 @@ run "Firewall" /opt/shell-libs/firewall-config.sh
 #run "Git" /opt/shell-libs/git-install.sh
 
 #=======================================================================
-#Use editor
-editor="nano"
 
 #Dns:
 backup_name=$(date +"%s")
@@ -137,7 +135,7 @@ run "install docker compose" /opt/shell-libs/docker-compose-install.sh
 
 run "Base Configs" /opt/shell-libs/baseConfig.sh
 
+run "Config nginx" /opt/shell-libs/nginx-config-base.sh
+
 #Backup
 run "Create Timeshift Backup" /opt/shell-libs/timeshift-createBackup.sh "Base apps is installed"
-
-run "Config nginx" /opt/shell-libs/nginx-config-base.sh
