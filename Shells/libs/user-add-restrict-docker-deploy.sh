@@ -34,10 +34,15 @@ else
   volume_dir=$3
 fi
 
+loginToDocker="$4"
+allow_ssh="$5"
+add_ssh_key="$6"
+disable_password="$7"
+enable_service="$8"
 #=============================================================
 
 echo_info "Create restrict user that supports docker (username: $username)..."
-/opt/shell-libs/user-add-restrict-docker.sh "$username"
+/opt/shell-libs/user-add-restrict-docker.sh "$username" "" "y" "n" "n" "y"
 exit_if_operation_failed "$?"
 
 #Set variables
@@ -66,3 +71,31 @@ echo ""
 echo_info "Create volume in $volume_dir..."
 sudo mkdir -p "$volume_dir" && sudo chown "$username:$username" "$volume_dir" && sudo chmod 750 "$volume_dir"
 exit_if_operation_failed "$?"
+
+#SSH Access
+/opt/shell-libs/user-ssh-access.sh "$username" "$allow_ssh"
+show_warning_if_operation_failed "$?"
+
+#SSH Key
+if [ -z "$add_ssh_key" ]; then
+  printf "Do you want add ssh key? (y/n): "
+  read -r add_ssh_key
+fi
+if [ "$add_ssh_key" = "y" ] || [ "$add_ssh_key" = "Y" ]; then
+  /opt/shell-libs/sshKey-config.sh "$username"
+  show_warning_if_operation_failed "$?"
+fi
+
+/opt/shell-libs/password-disable.sh "$username" "$disable_password"
+show_warning_if_operation_failed "$?"
+
+if [ -z "$enable_service" ]; then
+  echo ""
+  printf "Enable docker service for %s? (y/n): " "$(whoami)"
+  read -r enable_service
+fi
+if [ "$enable_service" = "y" ] || [ "$enable_service" = "Y" ]; then
+  echo_info "Enabling dcoker service..."
+  sudo systemctl enable --now docker.service docker.socket
+  show_warning_if_operation_failed "$?"
+fi

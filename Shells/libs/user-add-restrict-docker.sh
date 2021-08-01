@@ -14,6 +14,12 @@ if [ -z "$1" ]; then
 else
   username=$1
 fi
+
+loginToDocker="$2"
+allow_ssh="$3"
+add_ssh_key="$4"
+disable_password="$5"
+enable_service="$6"
 #================================================================================
 
 #Checks
@@ -111,32 +117,37 @@ chattr +i "$profile_file"
 show_warning_if_operation_failed "$?"
 
 #===============================================================================
-echo ""
-printf "Do you want to login in docker? (y/n): "
-read -r loginToDocker
-
+if [ -z "$loginToDocker" ]; then
+  echo ""
+  printf "Do you want to login in docker? (y/n): "
+  read -r loginToDocker
+fi
 if [ "$loginToDocker" = "y" ] || [ "$loginToDocker" = "Y" ]; then
   ssh -t -p "$ssh_port" "$username@$server_ip" "docker login; exit"
 fi
 
 #SSH Access
-/opt/shell-libs/user-ssh-access.sh "$username"
+/opt/shell-libs/user-ssh-access.sh "$username" "$allow_ssh"
 show_warning_if_operation_failed "$?"
 
 #SSH Key
-printf "Do you want add ssh key? (y/n): "
-read -r add_ssh_key
+if [ -z "$add_ssh_key" ]; then
+  printf "Do you want add ssh key? (y/n): "
+  read -r add_ssh_key
+fi
 if [ "$add_ssh_key" = "y" ] || [ "$add_ssh_key" = "Y" ]; then
   /opt/shell-libs/sshKey-config.sh "$username"
   show_warning_if_operation_failed "$?"
 fi
 
-/opt/shell-libs/password-disable.sh "$username"
+/opt/shell-libs/password-disable.sh "$username" "$disable_password"
 show_warning_if_operation_failed "$?"
 
-echo ""
-printf "Enable docker service for %s? (y/n): " "$(whoami)"
-read -r enable_service
+if [ -z "$enable_service" ]; then
+  echo ""
+  printf "Enable docker service for %s? (y/n): " "$(whoami)"
+  read -r enable_service
+fi
 if [ "$enable_service" = "y" ] || [ "$enable_service" = "Y" ]; then
   echo_info "Enabling dcoker service..."
   sudo systemctl enable --now docker.service docker.socket
