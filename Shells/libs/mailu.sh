@@ -59,6 +59,7 @@ add_mx_record_dns_task() {
 }
 
 ensure_ports_are_free() {
+  echo_info "Check ports..."
   port_must_free "2500"
   port_must_free "8081"
   port_must_free "8443"
@@ -241,7 +242,13 @@ echo ""
 
 #Create restart.sh
 restart_docker_shell="restart-docker.sh"
+echo_info "Create $restart_docker_shell..."
 sudo chattr -i "$homeDir/bin" && echo "docker-compose down && docker-compose -p mailu up -d" >>"$homeDir/bin/$restart_docker_shell" && sudo chmod +x "$homeDir/bin/$restart_docker_shell" && chattr +i "$homeDir/bin"
+
+echo_info "Create sudo-$restart_docker_shell..."
+group_number=$(/opt/shell-libs/user-group-number.sh)
+sudo mkdir "$homeDir/.sudo" && echo "sudo docker-compose --host unix:///run/user/$group_number/docker.sock down && sudo docker-compose --host unix:///run/user/$group_number/docker.sock  -p mailu up -d" >>"$homeDir/.sudo/$restart_docker_shell" && sudo chmod +x "$homeDir/.sudo/$restart_docker_shell" && chmod 750 "$homeDir/.sudo" && chattr +i "$homeDir/.sudo"
+
 show_warning_if_operation_failed "$?"
 echo ""
 
@@ -281,14 +288,15 @@ sleep 25s
 echo ""
 
 #Generate random password
-/opt/shell-libs/password-generate.sh
+password=$(/opt/shell-libs/password-generate.sh)
+echo_info "Random password: $password"
 
 echo_info "Set password for admin@$domain..."
 printf "Password for admin@%s: " "$domain"
 read -r admin_password
 
-echo "ssh -t -p $ssh_port ""$username"@"$server_ip"""
-ssh -t -p "$ssh_port" "$username@$server_ip" "docker-compose -p mailu exec admin flask mailu admin admin $domain $admin_password; exit"
+echo_info "dcoker-compose up..."
+sudo docker-compose --host unix:///run/user/$group_number/docker.sock -p mailu exec admin flask mailu admin admin $domain $admin_password
 show_warning_if_operation_failed "$?"
 echo ""
 

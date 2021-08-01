@@ -1,5 +1,5 @@
 #Libs
-if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-ssh-access.sh ] || [ ! -f /opt/shell-libs/sshKey-config.sh ] || [ ! -f /opt/shell-libs/ip-current.sh ] || [ ! -f /opt/shell-libs/password-disable.sh ] || [ ! -f /opt/shell-libs/ssh-port-current.sh ]; then
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-ssh-access.sh ] || [ ! -f /opt/shell-libs/sshKey-config.sh ] || [ ! -f /opt/shell-libs/ip-current.sh ] || [ ! -f /opt/shell-libs/password-disable.sh ] || [ ! -f /opt/shell-libs/ssh-port-current.sh ] || [ ! -f /opt/shell-libs/user-group-number.sh ]; then
   echo "Can't find libs." >&2
   echo "Operation failed." >&2
   exit 1
@@ -91,7 +91,7 @@ profile_file="$homeDir/.profile"
 echo_info "Adding contents..."
 chattr -i "$profile_file"
 
-group_number=$(grep ^"$username" /etc/passwd | gawk -F: '{ print $3 }')
+group_number=$(/opt/shell-libs/user-group-number.sh)
 
 echo "# don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options
