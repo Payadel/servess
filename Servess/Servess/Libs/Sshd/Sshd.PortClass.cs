@@ -12,7 +12,7 @@ namespace Servess.Libs.Sshd {
             [Input("path", "p", "SSHD file path", nameof(Path), false)]
             public string? Path { get; set; }
 
-            [Input("port", "p",
+            [Input("port", "po",
                 "Port Number", nameof(Port), isRequired: true, hasValue: true)]
             public int Port { get; set; }
 
