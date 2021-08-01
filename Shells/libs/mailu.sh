@@ -319,7 +319,7 @@ fi
 
 echo_info "Add $username to allow ssh list for ssh access.."
 echo_warning "Disable ssh access later if you want."
-servess sshd ssh-access -aa "$username"
+/opt/shell-libs/user-ssh-access.sh "$username" "y"
 
 echo "ssh -t -p $ssh_port ""$username"@"$server_ip"""
 ssh -t -p "$ssh_port" "$username@$server_ip" "$restart_docker_shell; exit"
