@@ -53,7 +53,7 @@ add_security_headers() {
     user_task 'Add add_header X-XSS-Protection "1; mode=block"; to http section.'
   fi
 
-  strict_transport=$(cat $nginx_config_file | grep "add_header Strict-Transport-Security 'max-age=31536000; includeSubDomains; preload';")
+  strict_transport=$(cat $nginx_config_file | grep 'add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload";')
   if [ -z "$strict_transport" ]; then
     user_task 'Add add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"; to http section.'
   fi
@@ -121,7 +121,6 @@ check_with_gixy() {
   fi
 
   gixy "$nginx_config_file"
-  show_error_if_operation_failed "$code"
 
   user_task ""
 }
