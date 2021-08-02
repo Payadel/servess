@@ -20,6 +20,7 @@ if [ -z "$username" ]; then
     printf "Username: "
     read -r username
 fi
+user_must_exist "$username"
 
 #Find user home dir
 home_dir=$(/opt/shell-libs/user-get-homeDir.sh "$username")

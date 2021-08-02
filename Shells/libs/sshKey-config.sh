@@ -1,5 +1,5 @@
 #Libs
-if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-get-homeDir.sh ]; then
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-get-homeDir.sh ] || [ ! -f /opt/shell-libs/password-generate.sh ]; then
   echo "Can't find libs." >&2
   echo "Operation failed." >&2
   exit 1
@@ -44,6 +44,11 @@ fi
 
 if [ -z "$public_key" ]; then
   private_key_file="$ssh_dir/temp"
+
+  echo ""
+  echo_info "Random Password: "
+  /opt/shell-libs/password-generate.sh
+  echo ""
   ssh-keygen -f "$private_key_file" -b 4096
   exit_if_operation_failed "$?"
 
