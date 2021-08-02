@@ -66,7 +66,7 @@ if [ "$disable_banner" = "y" ] || [ "$disable_banner" = "Y" ]; then
     delete_user_if_operation_failed "$?"
 fi
 
-#Expire Password aftr login
+#Expire Password after login
 if [ -z "$expire_password" ]; then
     printf "force expire the password (the user must change password after login)? (y/n): "
     read -r expire_password

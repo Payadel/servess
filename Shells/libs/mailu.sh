@@ -1,5 +1,5 @@
 #Libs
-if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-add-restrict-docker.sh ] || [ ! -f /opt/shell-libs/user-get-homeDir.sh ] || [ ! -f /opt/shell-libs/nginx-add-app.sh ] || [ ! -f /opt/shell-libs/ip-current.sh ] || [ ! -f /opt/shell-libs/ufw-mailu.sh ] || [ ! -f /opt/shell-libs/password-generate.sh ] || [ ! -f /opt/shell-libs/user-group-number.sh ] || [ ! -f /opt/shell-libs/user-config.sh ]; then
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-add-restrict-docker.sh ] || [ ! -f /opt/shell-libs/user-get-homeDir.sh ] || [ ! -f /opt/shell-libs/nginx-add-app.sh ] || [ ! -f /opt/shell-libs/ip-current.sh ] || [ ! -f /opt/shell-libs/ufw-mailu.sh ] || [ ! -f /opt/shell-libs/password-generate.sh ] || [ ! -f /opt/shell-libs/user-group-number.sh ] || [ ! -f /opt/shell-libs/user-config.sh ] || [ ! -f /opt/shell-libs/ufw-mailu.sh ]; then
   echo "Can't find libs." >&2
   echo "Operation failed." >&2
   exit 1
@@ -325,8 +325,8 @@ echo "ssh -t -p $ssh_port ""$username"@"$server_ip"""
 ssh -t -p "$ssh_port" "$username@$server_ip" "$restart_docker_shell; exit"
 exit_if_operation_failed "$?"
 
-echo_info "Sleep 25s to ensure all containers are run..."
-sleep 25s
+echo_info "Sleep 35s to ensure all containers are run..."
+sleep 35s
 echo ""
 
 #Generate random password
@@ -350,6 +350,10 @@ echo_info "Config user..."
 echo_info "Config nginx..."
 /opt/shell-libs/nginx-add-app.sh "mail.$domain" "/var/log/nginx" "https://localhost:8443" "/etc/nginx"
 echo ""
+
+echo_info "Config firewall..."
+. /opt/shell-libs/ufw-mailu.sh
+ufw-mailu "enable"
 
 user_task "Go to https://mail.$domain/admin, section mail domains, Click un detain button, Then click on Generate Keys button to generate keys."
 echo ""
