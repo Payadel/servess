@@ -57,6 +57,10 @@ process_must_ok() {
 }
 
 for directory in /run/user/*; do
+  if [ ! -k "$directory/docker.sock" ]; then
+    continue
+  fi
+
   processes=$(sudo docker --host "unix://$directory/docker.sock" ps --format "{{.ID}}\t{{.Image}}\t{{.Status}}" 2>/dev/null)
   code="$?"
 
