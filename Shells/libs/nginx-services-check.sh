@@ -30,8 +30,40 @@ validate_root_dir() {
   fi
 }
 
+validate_ssl_file() {
+  local fileName=$1
+  local key="$2"
+
+  file=$(awk -F ' ' -v key="$key" '$1==key {print $2}' "$fileName")
+  if [ -z "$file" ]; then
+    return 0
+  fi
+
+  file=${file::-1}
+  if [ ! -f "$file" ]; then
+    echo -e "$fileName: $ERROR_COLORIZED - Can't find ssl file. ($ssl_certificate)"
+    return 1
+  fi
+}
+
+validate_ssl_files() {
+  local fileName=$1
+
+  if ! validate_ssl_file "$fileName" "ssl_certificate"; then
+    return 1
+  fi
+
+  if ! validate_ssl_file "$fileName" "ssl_certificate_key"; then
+    return 1
+  fi
+}
+
 validate_nginx_file() {
   local fileName=$1
+
+  if ! validate_ssl_files "$fileName"; then
+    return 1
+  fi
 
   proxy_pass=$(awk -F ' ' -v key="proxy_pass" '$1==key {print $2}' "$fileName")
   if [ -z "$proxy_pass" ]; then
