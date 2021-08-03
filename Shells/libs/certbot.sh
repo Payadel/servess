@@ -1,11 +1,13 @@
 #Libs
-if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ]; then
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/ip-current.sh ]; then
     echo "Can't find libs." >&2
     echo "Operation failed." >&2
     exit 1
 fi
 . /opt/shell-libs/colors.sh
 . /opt/shell-libs/utility.sh
+
+letsencrypt_dir="/etc/letsencrypt"
 
 rollback_if_operation_failed() {
     local code="$1"
@@ -16,9 +18,9 @@ rollback_if_operation_failed() {
         return 0
     fi
 
-    if [ -d "/etc/letsencrypt/live/$old_ssl_name" ]; then
-        echo_info "Moving /etc/letsencrypt/live/$old_ssl_name to /etc/letsencrypt/live/$domain..."
-        sudo mv "/etc/letsencrypt/live/$old_ssl_name" "/etc/letsencrypt/live/$domain"
+    if [ -d "$letsencrypt_dir/live/$old_ssl_name" ]; then
+        echo_info "Moving $letsencrypt_dir/live/$old_ssl_name to $letsencrypt_dir/live/$domain..."
+        sudo mv "$letsencrypt_dir/live/$old_ssl_name" "$letsencrypt_dir/live/$domain"
         echo ""
     fi
 }
@@ -39,9 +41,9 @@ if [ "$sure" != "y" ] && [ "$sure" != "Y" ]; then
 fi
 echo ""
 
-if [ -d /etc/letsencrypt ]; then
-    echo_info "chattr -i /etc/letsencrypt/..."
-    sudo chattr -i /etc/letsencrypt/
+if [ -d "$letsencrypt_dir" ]; then
+    echo_info "chattr -i $letsencrypt_dir/..."
+    sudo chattr -i "$letsencrypt_dir"
     echo ""
 fi
 
@@ -50,11 +52,11 @@ sudo apt install "certbot" "python3-certbot-nginx"
 exit_if_operation_failed "$?"
 echo ""
 
-if [ -d "/etc/letsencrypt/live/$domain" ]; then
+if [ -d "$letsencrypt_dir/live/$domain" ]; then
     date=$(date +"%s")
     old_ssl_name="$domain-$date"
-    echo_info "Moving /etc/letsencrypt/live/$domain to /etc/letsencrypt/live/$old_ssl_name..."
-    sudo mv "/etc/letsencrypt/live/$domain" "/etc/letsencrypt/live/$old_ssl_name"
+    echo_info "Moving $letsencrypt_dir/live/$domain to $letsencrypt_dir/live/$old_ssl_name..."
+    sudo mv "$letsencrypt_dir/live/$domain" "$letsencrypt_dir/live/$old_ssl_name"
     echo ""
 fi
 
@@ -69,6 +71,19 @@ sudo certbot certonly \
 rollback_if_operation_failed "$?"
 echo ""
 
-echo_info "chattr +i /etc/letsencrypt/..."
-sudo chattr +i /etc/letsencrypt/
+echo_info "chattr +i $letsencrypt_dir/..."
+sudo chattr +i "$letsencrypt_dir"
 show_warning_if_operation_failed "$?"
+
+echo_success "Done."
+echo ""
+
+echo_info "You can create backup in your local system with this command: "
+server_ip="$(/opt/shell-libs/ip-current.sh)"
+if [ "$?" = 0 ]; then
+    echo "scp -r $(whoami)@$server_ip:$letsencrypt_dir /local/dir"
+    echo_warning "Replace /local/dir with your local address!"
+else
+    echo "scp -r $(whoami)@HOST:$letsencrypt_dir /local/dir"
+    echo_warning "Replace /local/dir with your local address and Replace HOST with your host name (or ip)."
+fi
