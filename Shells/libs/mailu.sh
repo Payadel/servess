@@ -338,14 +338,15 @@ if [ -z "$admin_password" ]; then
   printf "Password for admin@%s: " "$domain"
   read -r admin_password
 fi
+echo_warning "Admin password: $admin_password"
 
-echo_info "dcoker-compose up..."
+echo_info "Adding admin account..."
 sudo docker-compose --host unix:///run/user/$group_number/docker.sock -p mailu exec admin flask mailu admin admin $domain $admin_password
 show_warning_if_operation_failed "$?"
 echo ""
 
 echo_info "Config user..."
-/opt/shell-libs/user-config.sh
+/opt/shell-libs/user-config.sh "$username" "n" "n" "y" "n" "n" "n" "y"
 
 echo_info "Config nginx..."
 /opt/shell-libs/nginx-add-app.sh "mail.$domain" "/var/log/nginx" "https://localhost:8443" "/etc/nginx"
@@ -358,31 +359,25 @@ ufw-mailu "enable"
 user_task "Go to https://mail.$domain/admin, section mail domains, Click un detain button, Then click on Generate Keys button to generate keys."
 echo ""
 
+#SPF
 user_task "Create TXT record DNS:     @    SPF value"
+check_spf_dns_record
 echo ""
 
+#DKIM
 user_task "Create TXT record DNS:     dkim._domainkey.$domain   DKIM value"
+check_dkim_dns_record
 echo ""
 
+#DMARC
 user_task "Create TXT record DNS:     _dmarc.$domain   DMARC value"
+check_dmarc_dns_record
 echo ""
 
 user_task "Ensure send and receive email are correct."
 echo ""
 
 user_task "Change admin password if is necessary."
-echo ""
-
-#SPF
-check_spf_dns_record
-echo ""
-
-#DKIM
-check_dkim_dns_record
-echo ""
-
-#DMARC
-check_dmarc_dns_record
 echo ""
 
 user_task "You can check email with https://mxtoolbox.com/deliverability/"

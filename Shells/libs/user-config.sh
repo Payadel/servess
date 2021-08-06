@@ -63,7 +63,7 @@ if [ -z "$disable_banner" ]; then
     read -r disable_banner
 fi
 if [ "$disable_banner" = "y" ] || [ "$disable_banner" = "Y" ]; then
-    if [ !-f "$home_dir/.hushlogin" ]; then
+    if [ ! -f "$home_dir/.hushlogin" ]; then
         sudo touch "$home_dir/.hushlogin" && chattr +i "$home_dir/.hushlogin"
         delete_user_if_operation_failed "$?"
     fi
