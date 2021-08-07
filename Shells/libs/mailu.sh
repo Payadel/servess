@@ -150,6 +150,8 @@ stream
 }
 
 check_spf_dns_record() {
+  local domain="$1"
+
   echo_info "Checking SPF record..."
   spf_record=$(nslookup -type=txt "$domain" | grep "$domain" | grep v=spf)
   if [ "$?" != 0 ] || [ -z "$spf_record" ]; then
@@ -161,6 +163,8 @@ check_spf_dns_record() {
 }
 
 check_dkim_dns_record() {
+  local domain="$1"
+
   echo_info "Checking DKIM record..."
   dkim_record=$(nslookup -type=txt dkim._domainkey."$domain" | grep dkim._domainkey."$domain")
   if [ "$?" != 0 ] || [ -z "$dkim_record" ]; then
@@ -176,6 +180,20 @@ check_dmarc_dns_record() {
   dmarc_record=$(nslookup -type=txt _dmarc."$domain" | grep _dmarc."$domain")
   if [ "$?" != 0 ] || [ -z "$dmarc_record" ]; then
     echo_warning "We have trouble with DMARC DNS record"
+    user_task "Ensure DNS is correct."
+  else
+    echo_info "Looks good."
+  fi
+}
+
+check_ptr_dns_record() {
+  local server_ip="$1"
+  local domain="$2"
+
+  echo_info "Cheching PTR record..."
+  ptr_record=$(dig -x $server_ip | grep $domain)
+  if [ "$?" != 0 ] || [ -z "$dmarc_record" ]; then
+    echo_warning "We have trouble with PTR DNS record"
     user_task "Ensure DNS is correct."
   else
     echo_info "Looks good."
@@ -356,22 +374,30 @@ echo_info "Config firewall..."
 . /opt/shell-libs/ufw-mailu.sh
 ufw-mailu "enable"
 
+echo_info "Adding $server_ip mail.$domain mail to /etc/hosts..."
+echo "$server_ip mail.$domain mail" >>/etc/hosts
+
 user_task "Go to https://mail.$domain/admin, section mail domains, Click un detain button, Then click on Generate Keys button to generate keys."
 echo ""
 
 #SPF
 user_task "Create TXT record DNS:     @    SPF value"
-check_spf_dns_record
+check_spf_dns_record "$domain"
 echo ""
 
 #DKIM
 user_task "Create TXT record DNS:     dkim._domainkey.$domain   DKIM value"
-check_dkim_dns_record
+check_dkim_dns_record "$domain"
 echo ""
 
 #DMARC
 user_task "Create TXT record DNS:     _dmarc.$domain   DMARC value"
 check_dmarc_dns_record
+echo ""
+
+#PTR
+user_task "Create PTR record DNS:     $server_ip   $domain"
+check_ptr_dns_record "$server_ip" "$domain"
 echo ""
 
 user_task "Ensure send and receive email are correct."
