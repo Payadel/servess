@@ -1,5 +1,5 @@
 #Libs
-if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/motd-add.sh ] || [ ! -f /opt/shell-libs/users-docker-services-check.sh ] || [ ! -f /opt/shell-libs/ssh-port-change.sh ] || [ ! -f /opt/shell-libs/password-generate.sh ]; then
+if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/motd-add.sh ] || [ ! -f /opt/shell-libs/users-docker-services-check.sh ] || [ ! -f /opt/shell-libs/ssh-port-change.sh ] || [ ! -f /opt/shell-libs/password-generate.sh ] || [ ! -f ssl-check.sh ]; then
   echo "Can't find libs." >&2
   echo "Operation failed." >&2
   exit 1
@@ -54,16 +54,26 @@ if [ "$ssh_connection_timeout" = "y" ] || [ "$ssh_connection_timeout" = "Y" ]; t
   show_warning_if_operation_failed "$?"
 fi
 
+printf "Do you want see ssl-check in system welcome messages? (y/n): "
+read -r input
+if [ "$input" == "y" ] || [ "$input" == "Y" ]; then
+  /opt/shell-libs/motd-add.sh "/opt/shell-libs" "ssl-check.sh"
+  user_task "Add your ssl paths to this file: /root/.ssl/paths"
+  show_warning_if_operation_failed "$?"
+fi
+
 printf "Do you want see users-docker-service-checks in system welcome messages? (y/n): "
 read -r input
 if [ "$input" == "y" ] || [ "$input" == "Y" ]; then
   /opt/shell-libs/motd-add.sh "/opt/shell-libs" "users-docker-services-check.sh"
+  show_warning_if_operation_failed "$?"
 fi
 
 printf "Do you want change ssh port? (y/n): "
 read -r input
 if [ "$input" == "y" ] || [ "$input" == "Y" ]; then
   /opt/shell-libs/ssh-port-change.sh
+  show_warning_if_operation_failed "$?"
 fi
 
 printf "Do you want change %s password? (y/n): " "$(whoami)"
@@ -72,4 +82,5 @@ if [ "$input" == "y" ] || [ "$input" == "Y" ]; then
   password=$(/opt/shell-libs/password-generate.sh)
   echo_info "Random password: $password"
   sudo passwd "$(whoami)"
+  show_warning_if_operation_failed "$?"
 fi
