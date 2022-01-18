@@ -41,6 +41,9 @@ install_servess_dir="$install_dir/$cliName"
 bin_path="/usr/local/bin/servess"
 libs_dir="$install_dir/shell-libs"
 
+echo "Updating..."
+sudo apt update
+
 echo "Install git..."
 sudo apt install -y git-all
 exit_if_operation_failed "$?"
