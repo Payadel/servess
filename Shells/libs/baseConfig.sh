@@ -38,8 +38,8 @@ fi
 printf "Do you want config SSH connection timeout? (y/n): "
 read -r ssh_connection_timeout
 if [ "$ssh_connection_timeout" = "y" ] || [ "$ssh_connection_timeout" = "Y" ]; then
-  ClientAliveInterval=1200
-  printf "Client Alive Interval (default: %s): " "$ClientAliveInterval"
+  ClientAliveInterval=3600
+  printf "Client Alive Interval (default: %s seconds): " "$ClientAliveInterval"
   read -r input
   if [ -n "$input" ]; then
     ClientAliveInterval="$input"
