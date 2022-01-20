@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #Libs
 if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/sshKey-config.sh ] || [ ! -f /opt/shell-libs/user-delete.sh ] || [ ! -f /opt/shell-libs/password-generate.sh ]; then
   echo "Can't find libs." >&2

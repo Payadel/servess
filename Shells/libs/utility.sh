@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if [ ! -f /opt/shell-libs/colors.sh ]; then
   echo "Can't find libs." >&2
   echo "Operation failed." >&2

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-ssh-access.sh ] || [ ! -f /opt/shell-libs/password-disable.sh ] || [ ! -f /opt/shell-libs/ssh-restart.sh ]; then
     echo "Can't find libs." >&2
     echo "Operation failed." >&2

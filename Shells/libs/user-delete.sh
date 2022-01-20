@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #Libs
 if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/user-get-homeDir.sh ] || [ ! -f /opt/shell-libs/password-enable.sh ] || [ ! -f /opt/shell-libs/user-logout-sessions.sh ] || [ ! -f /opt/shell-libs/ssh-restart.sh ]; then
   echo "Can't find libs." >&2

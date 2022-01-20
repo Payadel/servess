@@ -1,3 +1,5 @@
+#!/bin/bash
+
 username="$1"
 if [ -z "$username" ]; then
     printf "Username: "

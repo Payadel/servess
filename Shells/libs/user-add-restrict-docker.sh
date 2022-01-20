@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #Libs
 if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/ip-current.sh ] || [ ! -f /opt/shell-libs/ssh-port-current.sh ] || [ ! -f /opt/shell-libs/user-group-number.sh ]; then
   echo "Can't find libs." >&2
