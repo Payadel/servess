@@ -1,3 +1,5 @@
+#!/bin/bash
+
 getBackup() {
   target=$1
   backupDir=$2
