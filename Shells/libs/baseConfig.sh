@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #Libs
 if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/motd-add.sh ] || [ ! -f /opt/shell-libs/users-docker-services-check.sh ] || [ ! -f /opt/shell-libs/ssh-port-change.sh ] || [ ! -f /opt/shell-libs/password-generate.sh ] || [ ! -f ssl-check.sh ]; then
   echo "Can't find libs." >&2

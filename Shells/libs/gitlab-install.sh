@@ -1,3 +1,5 @@
+#!/bin/bash
+
 gitlab_setting_file=/etc/gitlab/gitlab.rb
 gitlab_ssl_dir=/etc/gitlab/ssl
 install_status_file=~/gitlab_install_status

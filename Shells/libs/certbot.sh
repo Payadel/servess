@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #Libs
 if [ ! -f /opt/shell-libs/colors.sh ] || [ ! -f /opt/shell-libs/utility.sh ] || [ ! -f /opt/shell-libs/ip-current.sh ]; then
     echo "Can't find libs." >&2
@@ -62,12 +64,12 @@ fi
 
 echo_info "Running certbot..."
 sudo certbot certonly \
---agree-tos \
---manual \
---preferred-challenges=dns \
--d *."$domain" \
--d "$domain" \
---server https://acme-v02.api.letsencrypt.org/directory
+    --agree-tos \
+    --manual \
+    --preferred-challenges=dns \
+    -d *."$domain" \
+    -d "$domain" \
+    --server https://acme-v02.api.letsencrypt.org/directory
 rollback_if_operation_failed "$?"
 echo ""
 
@@ -78,7 +80,7 @@ show_warning_if_operation_failed "$?"
 echo_success "Done."
 echo ""
 
-echo_info "You can create backup in your local system with this command: "
+echo_info "You can create backup in your local system with this command (run this command in your system not in current system): "
 server_ip="$(/opt/shell-libs/ip-current.sh)"
 if [ "$?" = 0 ]; then
     echo "scp -r $(whoami)@$server_ip:$letsencrypt_dir /local/dir"

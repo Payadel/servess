@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if service apache2 status; then
     echo "Apache is installed. This can disrupt the Nginx service."
     printf "Do you wand delete it? (y/n): "

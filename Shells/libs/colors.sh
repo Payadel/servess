@@ -1,3 +1,5 @@
+#!/bin/bash
+
 BLACK="30"
 RED="31"
 GREEN="32"
