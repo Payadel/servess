@@ -64,7 +64,7 @@ user_must_exist "$username"
 /opt/shell-libs/user-logout-sessions.sh "$username" "y"
 exit_if_operation_failed "$?"
 
-echo_info "Change user bash ro rbash..."
+echo_info "Change user bash to rbash..."
 sudo usermod --shell /bin/rbash "$username"
 exit_if_operation_failed "$?"
 
