@@ -1,3 +1,5 @@
+#! /bin/bash
+
 exit_if_operation_failed() {
   local code="$1"
   local message="$2"
@@ -61,20 +63,8 @@ exit_if_operation_failed "$?"
 sudo cp $name/Shells/installer.sh "$libs_dir/" && sudo chmod 750 "$libs_dir/installer.sh"
 exit_if_operation_failed "$?"
 
-#Servess
-
-echo "Install dotnet..."
-sudo "$libs_dir/dotnet5-install.sh"
-exit_if_operation_failed "$?"
-
-echo "Installing $cliName..."
-
-echo "Building project..."
-delete_dir_or_file "$install_servess_dir"
-sudo mkdir -p "$install_servess_dir" && sudo chmod 750 "$install_servess_dir"
-exit_if_operation_failed "$?"
-
-sudo chmod 750 $name/$name/publish.sh && ($name/$name/publish.sh "$install_servess_dir" "$name/$name")
+#Download and copy servess app
+wget https://github.com/HamidMolareza/Servess/releases/download/latest/release.tar.gz && tar -xvzf release.tar.gz && sudo cp -r release/* "$install_servess_dir"
 exit_if_operation_failed "$?"
 
 echo "Adds execute access..."
