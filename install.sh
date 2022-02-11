@@ -63,9 +63,17 @@ exit_if_operation_failed "$?"
 sudo cp $name/Shells/installer.sh "$libs_dir/" && sudo chmod 750 "$libs_dir/installer.sh"
 exit_if_operation_failed "$?"
 
-#Download and copy servess app
-wget https://github.com/HamidMolareza/Servess/releases/download/latest/release.tar.gz && tar -xvzf release.tar.gz && sudo cp -r release/* "$install_servess_dir"
+#Download Servess app
+wget https://github.com/HamidMolareza/Servess/releases/download/latest/release.tar.gz && tar -xvzf release.tar.gz
 exit_if_operation_failed "$?"
+
+#Move Servess app
+sudo mkdir "$install_servess_dir"
+sudo cp -r release/* "$install_servess_dir"
+exit_if_operation_failed "$?"
+
+rm release.tar.gz
+rm -r release
 
 echo "Adds execute access..."
 sudo chmod 750 "$install_servess_dir/$cliName"
